@@ -28,7 +28,15 @@ float zscale = 1;
 
 float ydelta = .2f;
 float xdelta = .2f;
+float mousex = 0;
+float mousey = 0;
 
+float mousexl = 0;
+float mouseyl = 0;
+
+float ak = 10;
+const int windowx = 1920 / 2;
+const int windowy = 1080 - 40;
 void Loop()
 {
   // yangle += ydelta;
@@ -53,6 +61,26 @@ void SpecialKeyHandler(int key, int x, int y)
     xangle -= 10.0f;
     break;
   }
+}
+void MouseHandler(int button, int state, int x, int y)
+{
+
+  if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+  {
+    mousexl = mousex;
+    mouseyl = mousey;
+    mousex = ((float)x / (float)windowx) * 2 - 1;
+    mousey = -2 * ((float)y / (float)windowy) + 1;
+  }
+  if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
+  {
+    mousexl = mousex;
+    mouseyl = mousey;
+    mousex = ((float)x / (float)windowx) * 2 - 1;
+    mousey = -2 * ((float)y / (float)windowy) + 1;
+  }
+  printf("x=%.2f,y=%.2f\n", mousex, mousey);
+  printf("w=%d,h=%d\n", windowx, windowy);
 }
 
 void translate(GLfloat x, GLfloat y, GLfloat z)
@@ -101,6 +129,17 @@ void scale(GLfloat x, GLfloat y, GLfloat z)
       x, 0, 0, 0,
       0, y, 0, 0,
       0, 0, z, 0,
+      0, 0, 0, 1};
+  glMultMatrixf(m);
+}
+void ark(GLfloat x, GLfloat y, GLfloat z, GLfloat angel)
+{
+  float c = cos(angel);
+  float s = sin(angel);
+  GLfloat m[16] = {
+      (1 - c) * x * x + c, (1 - c) * x * y - s * z, (1 - c) * x * z + s * y, 0,
+      (1 - c) * x * y + s * z, (1 - c) * y * y + c, (1 - c) * y * z - s * x, 0,
+      (1 - c) * x * z - s * y, (1 - c) * y * z + s * x, (1 - c) * z * z + c, 0,
       0, 0, 0, 1};
   glMultMatrixf(m);
 }
@@ -182,7 +221,7 @@ int main(int argc, char **argv)
 {
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-  glutInitWindowSize(800, 800);
+  glutInitWindowSize(windowx, windowy);
   glutInitWindowPosition(600, 80);
   glutCreateWindow("Simple Triangle");
 
@@ -193,6 +232,7 @@ int main(int argc, char **argv)
 
   glutSpecialFunc(SpecialKeyHandler);
   glutKeyboardFunc(NormalKeyHandler);
+  glutMouseFunc(MouseHandler);
 
   glutReshapeFunc(ChangeSize);
   glutDisplayFunc(RenderScene);
@@ -203,6 +243,8 @@ int main(int argc, char **argv)
 void ChangeSize(int w, int h)
 {
   // printf("Window Size= %d X %d\n", w, h);
+  // windowx = w;
+  // windowy = h;
   glViewport(0, 0, w, h);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
@@ -215,7 +257,7 @@ void RenderScene(void)
 {
   GLuint texture;
   int width, height, channels;
-  unsigned char *imageData = stbi_load("./kjy01601.png", &width, &height, &channels, 0);
+  unsigned char *imageData = stbi_load("../kjy01601.png", &width, &height, &channels, 0);
 
   glGenTextures(1, &texture);
   glBindTexture(GL_TEXTURE_2D, texture);
@@ -254,9 +296,9 @@ void RenderScene(void)
 
   glLoadIdentity();
   gluLookAt(
-      1, 2, 10,
+      0, 0, 10,
       0, 0, 0,
-      1, 1, 0);
+      0, 1, 0);
   glShadeModel(glShadeType);
 
   glBegin(GL_LINES);
@@ -272,14 +314,36 @@ void RenderScene(void)
   glVertex3f(0, 0, 100);
   glEnd();
 
-  glMatrixMode(GL_MODELVIEW);
+  // point
+  glColor3f(1.0, 0.0, 0.0);
+  glPointSize(10);
+  glBegin(GL_POINTS);
+  glVertex2f(mousex * 10, mousey * 10);
+  glEnd();
+  // last point line
+  glColor3f(0.0, 1.0, 0.0);
+  glBegin(GL_LINES);
+  glVertex3f(mousex * 10, mousey * 10, 5);
+  glVertex3f(mousexl * 10, mouseyl * 10, 5);
+  glEnd();
 
+  glColor3f(1.0, 1.0, 1.0);
+  glMatrixMode(GL_MODELVIEW);
+  float vx = (mousex - mousexl);
+  float vy = (mousey - mouseyl);
+  float l = sqrtf(vx * vx + vy * vy);
+  vx /= l;
+  vy /= l;
   scale(xscale, yscale, zscale);
   translate(xtrans, ytrans, ztrans);
-  rotateX(xangle);
-  rotateY(yangle);
-  rotateZ(zangle);
-
+  // rotateX(xangle);
+  // rotateY(yangle);
+  // rotateZ(zangle);
+  rotateZ(asin(vx));
+  rotateY(xangle);
+  rotateZ(-asin(vx));
+  // ak += 0.01;
+  // ark(10 * (mousex - mousexl), 10 * (mousey - mouseyl), 0, ak);
   glBegin(GL_TRIANGLES);
   // glColor3f(1,1,0);
   glTexCoord2f(0.5f, 0.0f);
