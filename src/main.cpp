@@ -3,7 +3,11 @@
 #include <GL/gl.h>
 #include <stdio.h>
 /*** freeglut***/
+#ifdef _MSC_VER
+#include "freeglut_std.h"
+#else
 #include <freeglut.h>
+#endif
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -20,39 +24,43 @@ void MenuCallback3(int);
 
 GLenum glShadeType = GL_SMOOTH;
 GLenum renderMode = GL_TRIANGLES;
-std::string filename = "../obj/gourd.obj";
+
+std::string filename ="./obj/gourd.obj";
+// std::string filename = "../obj/teapot.obj";
+
 int renderColor= 1;
 
-float yangle = 0;
-float xangle = 0;
-float zangle = 0;
+
+Vector3d angle = {0, 0, 0};
+
+Vector3d trans = {0, 0, 0};
+
+Vector3d scale = {1, 1, 1};
+
+Vector3d arbitray = {1, 1, 0};
+
+Vector3d camera = {1, 1, 1};
+Vector3d target = {0, 0, 0};
+
 float wangle = 0;
-
-float xtrans = 0;
-float ytrans = 0;
-float ztrans = 0;
-
-float xscale = 1;
-float yscale = 1;
-float zscale = 1;
 
 float ydelta = .2f;
 float xdelta = .2f;
 float mousex = 0;
 float mousey = 0;
 
-float mousexl = 0;
-float mouseyl = 0;
 
 std::vector<Vector3d> vertices;
 std::vector<FaceIndices> faces;
 Box box;
 
-const int windowx = 1920 / 2;
-const int windowy = 1080 - 40;
+int windowx = 1920 / 2;
+int windowy = 1080 - 40;
 void Loop()
 {
-  // yangle += ydelta;
+  RenderScene();
+  // glutPostRedisplay();
+  // angle.y += ydelta;
   // xangle += xdelta;
   glutPostRedisplay();
 }
@@ -62,16 +70,16 @@ void SpecialKeyHandler(int key, int x, int y)
   switch (key)
   {
   case GLUT_KEY_RIGHT:
-    yangle += 10.0f;
+    angle.y += 10.0f;
     break;
   case GLUT_KEY_LEFT:
-    yangle -= 10.0f;
+    angle.y -= 10.0f;
     break;
   case GLUT_KEY_UP:
-    xangle += 10.0f;
+    angle.x += 10.0f;
     break;
   case GLUT_KEY_DOWN:
-    xangle -= 10.0f;
+    angle.x -= 10.0f;
     break;
   }
 }
@@ -80,19 +88,15 @@ void MouseHandler(int button, int state, int x, int y)
 
   if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
   {
-    mousexl = mousex;
-    mouseyl = mousey;
     mousex = ((float)x / (float)windowx) * 2 - 1;
     mousey = -2 * ((float)y / (float)windowy) + 1;
   }
   if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
   {
-    mousexl = mousex;
-    mouseyl = mousey;
     mousex = ((float)x / (float)windowx) * 2 - 1;
     mousey = -2 * ((float)y / (float)windowy) + 1;
   }
-  // printf("x=%.2f,y=%.2f\n", mousex, mousey);
+  printf("mouse x=%.2f,y=%.2f\n", mousex, mousey);
   // printf("w=%d,h=%d\n", windowx, windowy);
 }
 
@@ -136,7 +140,7 @@ void rotateZ(GLfloat z)
   glMultMatrixf(m);
 }
 
-void scale(GLfloat x, GLfloat y, GLfloat z)
+void Scale(GLfloat x, GLfloat y, GLfloat z)
 {
   GLfloat m[16] = {
       x, 0, 0, 0,
@@ -150,81 +154,97 @@ void NormalKeyHandler(unsigned char key, int x, int y)
 {
   switch (key)
   {
-  case 'w':
-    xangle += 0.05f;
-    break;
   case 'q':
-    xangle -= 0.05f;
-    break;
-  case 's':
-    yangle += 0.05f;
+    trans.x += 0.01f*box.get_radius();
     break;
   case 'a':
-    yangle -= 0.05f;
-    break;
-  case 'x':
-    zangle += 0.05f;
+    trans.y += 0.01f*box.get_radius();
     break;
   case 'z':
-    zangle -= 0.05f;
+    trans.z += 0.01f*box.get_radius();
     break;
 
-  case 'u':
-    wangle += 0.05f;
+  case 'w':
+    angle.x += 0.05f;
     break;
-  case 'i':
-    wangle -= 0.05f;
+  case 's':
+    angle.y += 0.05f;
+    break;
+  case 'x':
+    angle.z += 0.05f;
+    break;
+  
+  case 'e':
+    scale.x += 0.05f;
+    break;
+  case 'd':
+    scale.y += 0.05f;
+    break;
+  case 'c':
+    scale.z += 0.05f;
     break;
 
   case 'r':
-    xtrans += 0.1f;
-    break;
-  case 'e':
-    xtrans -= 0.1f;
+    camera.x += 0.05f*box.get_radius();
     break;
   case 'f':
-    ytrans += 0.1f;
-    break;
-  case 'd':
-    ytrans -= 0.1f;
+    camera.y += 0.05f*box.get_radius();
     break;
   case 'v':
-    ztrans += 0.1f;
-    break;
-  case 'c':
-    ztrans -= 0.1f;
+    camera.z += 0.05f*box.get_radius();
     break;
 
   case 't':
-    xscale += 0.1f;
-    break;
-  case 'y':
-    xscale -= 0.1f;
+    target.x += 0.05f*box.get_radius();
     break;
   case 'g':
-    yscale += 0.1f;
-    break;
-  case 'h':
-    yscale -= 0.1f;
+    target.y += 0.05f*box.get_radius();
     break;
   case 'b':
-    zscale += 0.1f;
+    target.z += 0.05f*box.get_radius();
+    break;
+
+  case 'y':
+    arbitray.x += 0.05f*box.get_radius();
+    break;
+  case 'h':
+    arbitray.y += 0.05f*box.get_radius();
     break;
   case 'n':
-    zscale -= 0.1f;
+    arbitray.z += 0.05f*box.get_radius();
     break;
+
+  case 'u':
+    arbitray.x -= 0.05f*box.get_radius();
+    break;
+  case 'j':
+    arbitray.y -= 0.05f*box.get_radius();
+    break;
+  case 'm':
+    arbitray.z -= 0.05f*box.get_radius();
+    break;
+
+  case 'i':
+    wangle += 0.05f;
+    break;
+
+
+  
 
   
   case '1':
-    xangle = 0;
-    yangle = 0;
-    zangle = 0;
-    xtrans = 0;
-    ytrans = 0;
-    ztrans = 0;
-    xscale = 1;
-    yscale = 1;
-    zscale = 1;
+    // reset
+    angle ={0, 0, 0};
+    trans ={0, 0, 0};
+    scale= {1, 1, 1};
+
+    float radius=box.get_radius()*1.1;
+    camera={0,0,radius};
+    target={0,0,0};
+    arbitray={1,1,0};
+    wangle=0;
+
+
     break;
   }
 }
@@ -237,13 +257,19 @@ int main(int argc, char **argv)
   glutInitWindowPosition(600, 80);
   glutCreateWindow("Simple Triangle");
 
+  box.right_top={-100.0,-100.0,-100.0};
+  box.left_bottom={100.0,100.0,100.0};
+
   if (argc>1)
     readObj(argv[1], vertices, faces,box); 
   else
     readObj(filename, vertices, faces,box); 
 
-  printf("center=(%.2f,%.2f,%.2f)\n", box.center.x, box.center.y, box.center.z);
-  printf("radius=%.2f\n", box.get_radius());
+  // target={box.center.x,box.center.y,box.center.z};
+  target={0,0,0};
+  camera={box.get_radius(),box.get_radius(),box.get_radius()};
+  // printf("center=(%.2f,%.2f,%.2f)\n", box.center.x, box.center.y, box.center.z);
+  // printf("radius=%.2f\n", box.get_radius());
   int sub1=glutCreateMenu(MenuCallback1);
   glutAddMenuEntry("point", 1);
   glutAddMenuEntry("line", 2);
@@ -266,30 +292,36 @@ int main(int argc, char **argv)
 
   glutAttachMenu(GLUT_RIGHT_BUTTON);
 
+  RenderScene();
   glutSpecialFunc(SpecialKeyHandler);
   glutKeyboardFunc(NormalKeyHandler);
   glutMouseFunc(MouseHandler);
 
-
   glutReshapeFunc(ChangeSize);
   glutDisplayFunc(RenderScene);
   glutIdleFunc(Loop);
+  
   glutMainLoop(); // http://www.programmer-club.com.tw/ShowSameTitleN/opengl/2288.html
   return 0;
 }
 void ChangeSize(int w, int h)
 {
   printf("Window Size= %d X %d\n", w, h);
-  // windowx = w;
-  // windowy = h;
+  
+  glEnable(GL_DEPTH_TEST);
+  glShadeModel(glShadeType);
   glViewport(0, 0, w, h);
+  windowx=w;
+  windowy=h;
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  // glOrtho(-100, 10, -10, 10,
-  //         10, 1000);
-  gluPerspective(90, (float)w / (float)h, 1, 1000);
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
+  float radius=box.get_radius()*1.1;
+  glOrtho(box.center.x -radius, box.center.x +radius,
+          box.center.y -radius, box.center.y +radius,
+          0.01, 10000);
+  camera={0,0,radius};
+  // camera={radius,radius,radius};
+  // gluPerspective(90, (float)w / (float)h, 0.01, 10000);
 }
 void RenderScene(void)
 {
@@ -329,65 +361,74 @@ void RenderScene(void)
   glClearColor(0, 0, 0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  glEnable(GL_DEPTH_TEST);
-  glMatrixMode(GL_MODELVIEW);
 
   float r=1.1;
+  glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
   gluLookAt(
-      box.center.x, box.center.y, box.center.z+box.get_radius()*r,
-      box.center.x, box.center.y, box.center.z,
+      camera.x, camera.y, camera.z,
+      target.x,target.y,target.z,
       0, 1, 0);
-  glShadeModel(glShadeType);
 
-  // glColor3f(1.0, 0.0, 0.0);
-  // glBegin(GL_LINES);
-  // glVertex3f(100, 0, 0);
-  // glVertex3f(-100, 0, 0);
-  // glEnd();
-  // glColor3f(0.0, 1.0, 0.0);
-  // glBegin(GL_LINES);
-  // glVertex3f(0, -100, 0);
-  // glVertex3f(0, 100, 0);
-  // glEnd();
-  // glColor3f(0.0, 0.0, 1.0);
-  // glBegin(GL_LINES);
-  // glVertex3f(0, 0, -100);
-  // glVertex3f(0, 0, 100);
-  // glEnd();
+  glColor3f(1.0, 0.0, 0.0);
+  glBegin(GL_LINES);
+  glVertex3f(100, 0, 0);
+  glVertex3f(0, 0, 0);
+  glEnd();
+  glColor3f(0.0, 1.0, 0.0);
+  glBegin(GL_LINES);
+  glVertex3f(0,0, 0);
+  glVertex3f(0, 100, 0);
+  glEnd();
+  glColor3f(0.0, 0.0, 1.0);
+  glBegin(GL_LINES);
+  glVertex3f(0, 0, 0);
+  glVertex3f(0, 0, 100);
+  glEnd();
 
-  // // point
+  // point
   // glColor3f(1.0, 0.0, 0.0);
   // glPointSize(10);
   // glBegin(GL_POINTS);
   // glVertex2f(mousex * 10, mousey * 10);
   // glEnd();
-  // // last point line
-  // glColor3f(0.0, 1.0, 0.0);
-  // glBegin(GL_LINES);
-  // glVertex3f(mousex * 10, mousey * 10, 5);
-  // glVertex3f(mousexl * 10, mouseyl * 10, 5);
+  // target point
+  // glColor3f(1.0, 0.0, 1.0);
+  // glPointSize(10);
+  // glBegin(GL_POINTS);
+  // glVertex3f(target.x, target.y, target.z);
   // glEnd();
+  // last point line
+  glColor3f(1.0, 1.0, 1.0);
+  glBegin(GL_LINES);
+  glVertex3f(0,0,0);
+  glVertex3f(arbitray.x, arbitray.y, arbitray.z);
+  glEnd();
 
-  glMatrixMode(GL_MODELVIEW);
-  float vx = (mousex - mousexl);
-  float vy = (mousey - mouseyl);
-  float l = sqrtf(vx * vx + vy * vy);
-  vx /= l;
-  vy /= l;
-  scale(xscale, yscale, zscale);
-  translate(xtrans, ytrans, ztrans);
-  rotateX(xangle);
-  rotateY(yangle);
-  rotateZ(zangle);
+  // float vx = (mousex );
+  // float vy = (mousey );
+  // float l = sqrtf(vx * vx + vy * vy);
+  // vx /= l;
+  // vy /= l;
+  float lxy=sqrtf(pow(arbitray.x,2)+pow(arbitray.y,2));
+  float lxz=sqrtf(pow(arbitray.x,2)+pow(arbitray.z,2));
 
-  rotateZ(asin(vx));
-  rotateY(wangle);
-  rotateZ(-asin(vx));
+  Scale(scale.x, scale.y, scale.z);
+  translate(trans.x, trans.y, trans.z);
+  rotateX(angle.x);
+  rotateY(angle.y);
+  rotateZ(angle.z);
+
+  rotateZ(-atan2(arbitray.y,arbitray.x));
+  rotateY(-atan2(arbitray.z,arbitray.x));
+  rotateX(wangle);
+  rotateY(atan2(arbitray.z,arbitray.x));
+  rotateZ(atan2(arbitray.y,arbitray.x));
 
   glColor3f(1.0, 1.0, 0.0);
   drawObj(vertices, faces,renderMode,renderColor);
   
+  // printf("len=%d\n", vertices.size());
   glutSwapBuffers();
 }
 
@@ -406,7 +447,7 @@ void MenuCallback1(int value)
     renderMode= GL_TRIANGLES;
     break;
   }
-  // glutPostRedisplay();
+  glutPostRedisplay();
 }
 
 void MenuCallback2(int value)
@@ -420,32 +461,45 @@ void MenuCallback2(int value)
     renderColor = 1;
     break;
   }
-  // glutPostRedisplay();
+  glutPostRedisplay();
 }
 void MenuCallback3(int value)
 {
   switch (value)
   {
   case 1:
-    filename = "../obj/gourd.obj";
+    filename = "gourd.obj";
     break;
   case 2:
-    filename = "../obj/octahedron.obj";
+    filename = "octahedron.obj";
     break;
   case 3:
-    filename = "../obj/teapot.obj";
+    filename = "teapot.obj";
     break;
   case 4:
-    filename = "../obj/teddy.obj";
+    filename = "teddy.obj";
     break;
   }
 
-  box.right_top={0.0,0.0,0.0};
-  box.left_bottom={0.0,0.0,0.0};
+  filename="./obj/"+filename;
+  box.right_top={-100.0,-100.0,-100.0};
+  box.left_bottom={100.0,100.0,100.0};
   printf("filename=%s\n", filename.c_str());
   vertices.clear();
   faces.clear();
   readObj(filename, vertices, faces,box);
+  box.update_center();
   printf("radius=%.2f\n", box.get_radius());
+  printf("right_top=(%.2f,%.2f,%.2f)\n", box.right_top.x, box.right_top.y, box.right_top.z);
+  printf("left_bottom=(%.2f,%.2f,%.2f)\n", box.left_bottom.x, box.left_bottom.y, box.left_bottom.z);
+  printf("center=(%.2f,%.2f,%.2f)\n", box.center.x, box.center.y, box.center.z);
+
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  float radius=box.get_radius()*1.1;
+  glOrtho(box.center.x -radius, box.center.x +radius,
+          box.center.y -radius, box.center.y +radius,
+          0.01, 10000);
+  camera={0,0,radius};
   glutPostRedisplay();
 }
