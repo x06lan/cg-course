@@ -24,7 +24,7 @@ void MenuCallback1(int);
 void MenuCallback2(int);
 void MenuCallback3(int);
 
-GLenum glShadeType = GL_SMOOTH;
+GLenum shadeType = GL_SMOOTH;
 GLenum renderMode = GL_TRIANGLES;
 
 std::string filename ="./obj/gourd.obj";
@@ -311,7 +311,7 @@ void ChangeSize(int w, int h)
   printf("Window Size= %d X %d\n", w, h);
   
   glEnable(GL_DEPTH_TEST);
-  glShadeModel(glShadeType);
+  glShadeModel(shadeType);
   glViewport(0, 0, w, h);
   windowx=w;
   windowy=h;
