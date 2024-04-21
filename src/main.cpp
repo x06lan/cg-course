@@ -54,7 +54,7 @@ float mousey = 0;
 
 std::vector<Vector3d> vertices;
 std::vector<FaceIndices> faces;
-Box box;
+BoundBox box;
 
 int windowx = 1920 / 2;
 int windowy = 1080 - 40;

@@ -15,7 +15,7 @@ struct  Vector3d
 struct FaceIndices {
     int v1, v2, v3;
 };
-class Box{
+class BoundBox{
     public:
     Vector3d center;
     Vector3d right_top;
@@ -52,7 +52,7 @@ float generateRandomFloat(int seed) {
     return dist(gen);
 }
 
-void readObj(const std::string& filename, std::vector<Vector3d>& vertices, std::vector<FaceIndices>& faces, Box& box) {
+void readObj(const std::string& filename, std::vector<Vector3d>& vertices, std::vector<FaceIndices>& faces, BoundBox& box) {
     std::ifstream in(filename);
     std::string line;
 
