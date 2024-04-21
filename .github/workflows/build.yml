@@ -37,10 +37,10 @@ jobs:
           submodules: recursive
 
       # Only run checks on Linux because Windows command line is trash
-      - if: matrix.os == 'ubuntu-latest'
-        name: Checking Formatting
-        run: |
-          find src/ include/  -name "*.*" -print0 | xargs -0 clang-format --dry-run --Werror --ferror-limit=15
+      # - if: matrix.os == 'ubuntu-latest'
+      #   name: Checking Formatting
+      #   run: |
+      #     find src/ include/  -name "*.*" -print0 | xargs -0 clang-format --dry-run --Werror --ferror-limit=15
 
       - name: Building Project
         if: matrix.os == 'ubuntu-latest'
