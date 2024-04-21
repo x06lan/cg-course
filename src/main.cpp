@@ -102,7 +102,7 @@ void MouseHandler(int button, int state, int x, int y)
   // printf("w=%d,h=%d\n", windowx, windowy);
 }
 
-void translate(GLfloat x, GLfloat y, GLfloat z)
+void translateMatrix(GLfloat x, GLfloat y, GLfloat z)
 {
   GLfloat m[16] = {
       1, 0, 0, 0,
@@ -142,7 +142,7 @@ void rotateZ(GLfloat z)
   glMultMatrixf(m);
 }
 
-void Scale(GLfloat x, GLfloat y, GLfloat z)
+void ScaleMatrix(GLfloat x, GLfloat y, GLfloat z)
 {
   GLfloat m[16] = {
       x, 0, 0, 0,
@@ -425,8 +425,8 @@ void RenderScene(void)
   float lxy=sqrtf(pow(arbitray.x,2)+pow(arbitray.y,2));
   float lxz=sqrtf(pow(arbitray.x,2)+pow(arbitray.z,2));
 
-  Scale(scale.x, scale.y, scale.z);
-  translate(trans.x, trans.y, trans.z);
+  ScaleMatrix(scale.x, scale.y, scale.z);
+  translateMatrix(trans.x, trans.y, trans.z);
   rotateX(angle.x);
   rotateY(angle.y);
   rotateZ(angle.z);
