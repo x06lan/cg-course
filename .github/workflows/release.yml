@@ -22,8 +22,8 @@ jobs:
 
       - name: Pre-Download Setup
         run: |
-          mkdir -p Indigo/build
-          mv assets Indigo
+          mkdir -p ComputerGraph/build
+          mv assets ComputerGraph
 
       - name: Download Artifact
         uses: dawidd6/action-download-artifact@v2
@@ -31,25 +31,25 @@ jobs:
           workflow: build.yml
           workflow_conclusion: success
           name: ${{ matrix.platform }}-binary
-          path: Indigo/build
+          path: ComputerGraph/build
 
       - if: matrix.platform == 'linux'
         run: |
-          chmod +x Indigo/build/Indigo
-          tar -cJvf Indigo-${{ github.ref_name }}-${{ matrix.platform }}.tar.xz Indigo
+          chmod +x ComputerGraph/build/ComputerGraph
+          tar -cJvf ComputerGraph-${{ github.ref_name }}-${{ matrix.platform }}.tar.xz ComputerGraph
 
       - if: matrix.platform == 'windows'
         run: |
-          zip -r Indigo-${{ github.ref_name }}-${{ matrix.platform }}.zip Indigo
+          zip -r ComputerGraph-${{ github.ref_name }}-${{ matrix.platform }}.zip ComputerGraph
 
       - if: matrix.platform == 'linux'
         uses: softprops/action-gh-release@v1
         with:
-          files: Indigo-${{ github.ref_name }}-${{ matrix.platform }}.tar.xz
+          files: ComputerGraph-${{ github.ref_name }}-${{ matrix.platform }}.tar.xz
           draft: true
 
       - if: matrix.platform == 'windows'
         uses: softprops/action-gh-release@v1
         with:
-          files: Indigo-${{ github.ref_name }}-${{ matrix.platform }}.zip
+          files: ComputerGraph-${{ github.ref_name }}-${{ matrix.platform }}.zip
           draft: true
