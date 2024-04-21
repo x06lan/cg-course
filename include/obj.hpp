@@ -1,7 +1,6 @@
-#include <GL/gl.h>
-#include <stdio.h>
-#include <fstream>
+
 #include <sstream>
+#include <fstream>
 #include <vector>
 #include <random>
 // #include <stdio>

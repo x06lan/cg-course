@@ -16,7 +16,6 @@ set(SRC_FILES)
 
 # you need pre-install OpenGL, GLU, please google
 set(INCLUDE_FILES
-    ${INCLUDE_DIR}/stb_image.h
     ${INCLUDE_DIR}/obj.hpp
 )
 set(SRC_FILES
@@ -28,8 +27,7 @@ add_executable(${PROJECT_NAME}
     ${INCLUDE_FILES}
     ${SRC_FILES}
 )
-target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${OPENGL_glu_LIBRARY})
-target_link_libraries(${PROJECT_NAME} freeglut)
+target_link_libraries(${PROJECT_NAME} ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY})
 target_link_libraries(${PROJECT_NAME} freeglut_static)
 target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/thirdparty/freeglut/include/GL)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/include)

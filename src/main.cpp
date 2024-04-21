@@ -11,9 +11,6 @@
 #include <freeglut.h>
 #include <freeglut_std.h>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-#include "pryamid.h"
 #include "obj.hpp"
 #include <vector>
 #include <random>
@@ -116,8 +113,8 @@ void rotateX(GLfloat x)
 {
   GLfloat m[16] = {
       1, 0, 0, 0,
-      0, cos(x), -sin(x), 0,
-      0, sin(x), cos(x), 0,
+      0, static_cast<GLfloat>(cos(x)), static_cast<GLfloat>(-sin(x)), 0,
+      0, static_cast<GLfloat>(sin(x)), static_cast<GLfloat>(cos(x)), 0,
       0, 0, 0, 1};
   glMultMatrixf(m);
 }
@@ -125,9 +122,9 @@ void rotateX(GLfloat x)
 void rotateY(GLfloat y)
 {
   GLfloat m[16] = {
-      cos(y), 0, sin(y), 0,
+      static_cast<GLfloat>(cos(y)), 0, static_cast<GLfloat>(sin(y)), 0,
       0, 1, 0, 0,
-      -sin(y), 0, cos(y), 0,
+      static_cast<GLfloat>(-sin(y)), 0, static_cast<GLfloat>(cos(y)), 0,
       0, 0, 0, 1};
   glMultMatrixf(m);
 }
@@ -135,8 +132,8 @@ void rotateY(GLfloat y)
 void rotateZ(GLfloat z)
 {
   GLfloat m[16] = {
-      cos(z), -sin(z), 0, 0,
-      sin(z), cos(z), 0, 0,
+      static_cast<GLfloat>(cos(z)), static_cast<GLfloat>(-sin(z)), 0, 0,
+      static_cast<GLfloat>(sin(z)), static_cast<GLfloat>(cos(z)), 0, 0,
       0, 0, 1, 0,
       0, 0, 0, 1};
   glMultMatrixf(m);
