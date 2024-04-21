@@ -1,13 +1,12 @@
 
-#include <GL/gl.h>
-#include <stdio.h>
 /*** freeglut***/
 #ifdef _MSC_VER
 #include "windows.h"
 #pragma comment(lib, "opengl32.lib")
 #endif
 
-
+#include <GL/gl.h>
+#include <stdio.h>
 #include <freeglut.h>
 #include <freeglut_std.h>
 
@@ -24,11 +23,10 @@ void MenuCallback3(int);
 GLenum shadeType = GL_SMOOTH;
 GLenum renderMode = GL_TRIANGLES;
 
-std::string filename ="./obj/gourd.obj";
+std::string filename = "./obj/gourd.obj";
 // std::string filename = "../obj/teapot.obj";
 
-int renderColor= 1;
-
+int renderColor = 1;
 
 Vector3d angle = {0, 0, 0};
 
@@ -47,7 +45,6 @@ float ydelta = .2f;
 float xdelta = .2f;
 float mousex = 0;
 float mousey = 0;
-
 
 std::vector<Vector3d> vertices;
 std::vector<FaceIndices> faces;
@@ -154,13 +151,13 @@ void NormalKeyHandler(unsigned char key, int x, int y)
   switch (key)
   {
   case 'q':
-    trans.x += 0.01f*box.get_radius();
+    trans.x += 0.01f * box.get_radius();
     break;
   case 'a':
-    trans.y += 0.01f*box.get_radius();
+    trans.y += 0.01f * box.get_radius();
     break;
   case 'z':
-    trans.z += 0.01f*box.get_radius();
+    trans.z += 0.01f * box.get_radius();
     break;
 
   case 'w':
@@ -172,7 +169,7 @@ void NormalKeyHandler(unsigned char key, int x, int y)
   case 'x':
     angle.z += 0.05f;
     break;
-  
+
   case 'e':
     scale.x += 0.05f;
     break;
@@ -184,129 +181,130 @@ void NormalKeyHandler(unsigned char key, int x, int y)
     break;
 
   case 'r':
-    camera.x += 0.05f*box.get_radius();
+    camera.x += 0.05f * box.get_radius();
     break;
   case 'f':
-    camera.y += 0.05f*box.get_radius();
+    camera.y += 0.05f * box.get_radius();
     break;
   case 'v':
-    camera.z += 0.05f*box.get_radius();
+    camera.z += 0.05f * box.get_radius();
     break;
 
   case 't':
-    target.x += 0.05f*box.get_radius();
+    target.x += 0.05f * box.get_radius();
     break;
   case 'g':
-    target.y += 0.05f*box.get_radius();
+    target.y += 0.05f * box.get_radius();
     break;
   case 'b':
-    target.z += 0.05f*box.get_radius();
+    target.z += 0.05f * box.get_radius();
     break;
 
   case 'y':
-    arbitray.x += 0.05f*box.get_radius();
+    arbitray.x += 0.05f * box.get_radius();
     break;
   case 'h':
-    arbitray.y += 0.05f*box.get_radius();
+    arbitray.y += 0.05f * box.get_radius();
     break;
   case 'n':
-    arbitray.z += 0.05f*box.get_radius();
+    arbitray.z += 0.05f * box.get_radius();
     break;
 
   case 'u':
-    arbitray.x -= 0.05f*box.get_radius();
+    arbitray.x -= 0.05f * box.get_radius();
     break;
   case 'j':
-    arbitray.y -= 0.05f*box.get_radius();
+    arbitray.y -= 0.05f * box.get_radius();
     break;
   case 'm':
-    arbitray.z -= 0.05f*box.get_radius();
+    arbitray.z -= 0.05f * box.get_radius();
     break;
 
   case 'i':
     wangle += 0.05f;
     break;
 
-
-  
-
-  
   case '1':
     // reset
-    angle ={0, 0, 0};
-    trans ={0, 0, 0};
-    scale= {1, 1, 1};
+    angle = {0, 0, 0};
+    trans = {0, 0, 0};
+    scale = {1, 1, 1};
 
-    float radius=box.get_radius()*1.1;
-    camera={0,0,radius};
-    target={0,0,0};
-    arbitray={1,1,0};
-    wangle=0;
-
+    float radius = box.get_radius() * 1.1;
+    camera = {0, 0, radius};
+    target = {0, 0, 0};
+    arbitray = {1, 1, 0};
+    wangle = 0;
 
     break;
   }
 }
 
-void drawObj( std::vector<Vector3d>& vertices, std::vector<FaceIndices>& faces,unsigned int renderMode,int renderColor){
+void drawObj(std::vector<Vector3d> &vertices, std::vector<FaceIndices> &faces, unsigned int renderMode, int renderColor)
+{
 
-    if(renderMode==GL_TRIANGLES || renderMode==GL_LINES){
-        for(int i=0;i<faces.size();i++){
-            Vector3d v1 = vertices[faces[i].v1 - 1];
-            Vector3d v2 = vertices[faces[i].v2 - 1];
-            Vector3d v3 = vertices[faces[i].v3 - 1];
-            if(renderMode==GL_TRIANGLES){
-                glBegin(renderMode);
-                if (renderColor == 0)
-                    glColor3f(1.0, 1.0, 1.0);
-                else 
-                    glColor3f(generateRandomFloat(i*3),generateRandomFloat(i*3+1),generateRandomFloat(i*3+2));
-                // glTexCoord2f(1.0f, 1.0f);
-                glVertex3f(v1.x, v1.y, v1.z);
-                // glTexCoord2f(1.0f, 1.0f);
-                glVertex3f(v2.x, v2.y, v2.z);
-                // glTexCoord2f(1.0f, 1.0f);
-                glVertex3f(v3.x, v3.y, v3.z);
-                glEnd();
-            }
-            else if(renderMode ==GL_LINES){
-                glBegin(renderMode);
+  if (renderMode == GL_TRIANGLES || renderMode == GL_LINES)
+  {
+    for (int i = 0; i < faces.size(); i++)
+    {
+      Vector3d v1 = vertices[faces[i].v1 - 1];
+      Vector3d v2 = vertices[faces[i].v2 - 1];
+      Vector3d v3 = vertices[faces[i].v3 - 1];
+      if (renderMode == GL_TRIANGLES)
+      {
+        glBegin(renderMode);
+        if (renderColor == 0)
+          glColor3f(1.0, 1.0, 1.0);
+        else
+          glColor3f(generateRandomFloat(i * 3), generateRandomFloat(i * 3 + 1), generateRandomFloat(i * 3 + 2));
+        // glTexCoord2f(1.0f, 1.0f);
+        glVertex3f(v1.x, v1.y, v1.z);
+        // glTexCoord2f(1.0f, 1.0f);
+        glVertex3f(v2.x, v2.y, v2.z);
+        // glTexCoord2f(1.0f, 1.0f);
+        glVertex3f(v3.x, v3.y, v3.z);
+        glEnd();
+      }
+      else if (renderMode == GL_LINES)
+      {
+        glBegin(renderMode);
 
-                if (renderColor == 0)
-                    glColor3f(1.0, 1.0, 1.0);
-                else 
-                    glColor3f(generateRandomFloat(i*3),generateRandomFloat(i*3+1),generateRandomFloat(i*3+2));
-                glVertex3f(v1.x, v1.y, v1.z);
-                glVertex3f(v2.x, v2.y, v2.z);
-                glEnd();
+        if (renderColor == 0)
+          glColor3f(1.0, 1.0, 1.0);
+        else
+          glColor3f(generateRandomFloat(i * 3), generateRandomFloat(i * 3 + 1), generateRandomFloat(i * 3 + 2));
+        glVertex3f(v1.x, v1.y, v1.z);
+        glVertex3f(v2.x, v2.y, v2.z);
+        glEnd();
 
-                glBegin(renderMode);
-                glVertex3f(v2.x, v2.y, v2.z);
-                glVertex3f(v3.x, v3.y, v3.z);
-                glEnd();
+        glBegin(renderMode);
+        glVertex3f(v2.x, v2.y, v2.z);
+        glVertex3f(v3.x, v3.y, v3.z);
+        glEnd();
 
-                glBegin(renderMode);
-                glVertex3f(v1.x, v1.y, v1.z);
-                glVertex3f(v2.x, v2.y, v2.z);
-                glEnd();
-            }
-        }
+        glBegin(renderMode);
+        glVertex3f(v1.x, v1.y, v1.z);
+        glVertex3f(v2.x, v2.y, v2.z);
+        glEnd();
+      }
     }
-    else if (renderMode == GL_POINTS){
-        for(int i=0;i<vertices.size();i++){
-            Vector3d v = vertices[i];
-            glPointSize(10);
-            if (renderColor == 0)
-                glColor3f(1.0, 1.0, 1.0);
-            else 
-                glColor3f(generateRandomFloat(i*3),generateRandomFloat(i*3+1),generateRandomFloat(i*3+2));
+  }
+  else if (renderMode == GL_POINTS)
+  {
+    for (int i = 0; i < vertices.size(); i++)
+    {
+      Vector3d v = vertices[i];
+      glPointSize(10);
+      if (renderColor == 0)
+        glColor3f(1.0, 1.0, 1.0);
+      else
+        glColor3f(generateRandomFloat(i * 3), generateRandomFloat(i * 3 + 1), generateRandomFloat(i * 3 + 2));
 
-            glBegin(renderMode);
-            glVertex3f(v.x, v.y, v.z);
-            glEnd();
-        }
+      glBegin(renderMode);
+      glVertex3f(v.x, v.y, v.z);
+      glEnd();
     }
-
+  }
 }
 int main(int argc, char **argv)
 {
@@ -316,38 +314,38 @@ int main(int argc, char **argv)
   glutInitWindowPosition(600, 80);
   glutCreateWindow("Simple Triangle");
 
-  box.right_top={-100.0,-100.0,-100.0};
-  box.left_bottom={100.0,100.0,100.0};
+  box.right_top = {-100.0, -100.0, -100.0};
+  box.left_bottom = {100.0, 100.0, 100.0};
 
-  if (argc>1)
-    readObj(argv[1], vertices, faces,box); 
+  if (argc > 1)
+    readObj(argv[1], vertices, faces, box);
   else
-    readObj(filename, vertices, faces,box); 
+    readObj(filename, vertices, faces, box);
 
   // target={box.center.x,box.center.y,box.center.z};
-  target={0,0,0};
-  camera={box.get_radius(),box.get_radius(),box.get_radius()};
+  target = {0, 0, 0};
+  camera = {box.get_radius(), box.get_radius(), box.get_radius()};
   // printf("center=(%.2f,%.2f,%.2f)\n", box.center.x, box.center.y, box.center.z);
   // printf("radius=%.2f\n", box.get_radius());
-  int sub1=glutCreateMenu(MenuCallback1);
+  int sub1 = glutCreateMenu(MenuCallback1);
   glutAddMenuEntry("point", 1);
   glutAddMenuEntry("line", 2);
   glutAddMenuEntry("face", 3);
 
-  int sub2=glutCreateMenu(MenuCallback2);
+  int sub2 = glutCreateMenu(MenuCallback2);
   glutAddMenuEntry("single color", 1);
   glutAddMenuEntry("random color", 2);
 
-  int sub3=glutCreateMenu(MenuCallback3);
+  int sub3 = glutCreateMenu(MenuCallback3);
   glutAddMenuEntry("gourd", 1);
   glutAddMenuEntry("octahedron", 2);
   glutAddMenuEntry("teapot", 3);
   glutAddMenuEntry("teddy", 4);
 
   glutCreateMenu(nullptr);
-  glutAddSubMenu("render mode",sub1);
-  glutAddSubMenu("render color",sub2);
-  glutAddSubMenu("render obj",sub3);
+  glutAddSubMenu("render mode", sub1);
+  glutAddSubMenu("render color", sub2);
+  glutAddSubMenu("render obj", sub3);
 
   glutAttachMenu(GLUT_RIGHT_BUTTON);
 
@@ -359,26 +357,26 @@ int main(int argc, char **argv)
   glutReshapeFunc(ChangeSize);
   glutDisplayFunc(RenderScene);
   glutIdleFunc(Loop);
-  
+
   glutMainLoop(); // http://www.programmer-club.com.tw/ShowSameTitleN/opengl/2288.html
   return 0;
 }
 void ChangeSize(int w, int h)
 {
   printf("Window Size= %d X %d\n", w, h);
-  
+
   glEnable(GL_DEPTH_TEST);
   glShadeModel(shadeType);
   glViewport(0, 0, w, h);
-  windowx=w;
-  windowy=h;
+  windowx = w;
+  windowy = h;
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  float radius=box.get_radius()*1.1;
-  glOrtho(box.center.x -radius, box.center.x +radius,
-          box.center.y -radius, box.center.y +radius,
+  float radius = box.get_radius() * 1.1;
+  glOrtho(box.center.x - radius, box.center.x + radius,
+          box.center.y - radius, box.center.y + radius,
           0.01, 10000);
-  camera={0,0,radius};
+  camera = {0, 0, radius};
   // camera={radius,radius,radius};
   // gluPerspective(90, (float)w / (float)h, 0.01, 10000);
 }
@@ -388,13 +386,12 @@ void RenderScene(void)
   glClearColor(0, 0, 0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
-  float r=1.1;
+  float r = 1.1;
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
   gluLookAt(
       camera.x, camera.y, camera.z,
-      target.x,target.y,target.z,
+      target.x, target.y, target.z,
       0, 1, 0);
 
   glColor3f(1.0, 0.0, 0.0);
@@ -404,7 +401,7 @@ void RenderScene(void)
   glEnd();
   glColor3f(0.0, 1.0, 0.0);
   glBegin(GL_LINES);
-  glVertex3f(0,0, 0);
+  glVertex3f(0, 0, 0);
   glVertex3f(0, 100, 0);
   glEnd();
   glColor3f(0.0, 0.0, 1.0);
@@ -415,12 +412,12 @@ void RenderScene(void)
 
   glColor3f(1.0, 1.0, 1.0);
   glBegin(GL_LINES);
-  glVertex3f(0,0,0);
+  glVertex3f(0, 0, 0);
   glVertex3f(arbitray.x, arbitray.y, arbitray.z);
   glEnd();
 
-  float lxy=sqrtf(pow(arbitray.x,2)+pow(arbitray.y,2));
-  float lxz=sqrtf(pow(arbitray.x,2)+pow(arbitray.z,2));
+  float lxy = sqrtf(pow(arbitray.x, 2) + pow(arbitray.y, 2));
+  float lxz = sqrtf(pow(arbitray.x, 2) + pow(arbitray.z, 2));
 
   ScaleMatrix(scale.x, scale.y, scale.z);
   translateMatrix(trans.x, trans.y, trans.z);
@@ -428,32 +425,31 @@ void RenderScene(void)
   rotateY(angle.y);
   rotateZ(angle.z);
 
-  rotateZ(-atan2(arbitray.y,arbitray.x));
-  rotateY(-atan2(arbitray.z,arbitray.x));
+  rotateZ(-atan2(arbitray.y, arbitray.x));
+  rotateY(-atan2(arbitray.z, arbitray.x));
   rotateX(wangle);
-  rotateY(atan2(arbitray.z,arbitray.x));
-  rotateZ(atan2(arbitray.y,arbitray.x));
+  rotateY(atan2(arbitray.z, arbitray.x));
+  rotateZ(atan2(arbitray.y, arbitray.x));
 
   glColor3f(1.0, 1.0, 0.0);
-  drawObj(vertices, faces,renderMode,renderColor);
-  
+  drawObj(vertices, faces, renderMode, renderColor);
+
   // printf("len=%d\n", vertices.size());
   glutSwapBuffers();
 }
-
 
 void MenuCallback1(int value)
 {
   switch (value)
   {
   case 1:
-    renderMode= GL_POINTS;
+    renderMode = GL_POINTS;
     break;
   case 2:
-    renderMode= GL_LINES;
+    renderMode = GL_LINES;
     break;
   case 3:
-    renderMode= GL_TRIANGLES;
+    renderMode = GL_TRIANGLES;
     break;
   }
   glutPostRedisplay();
@@ -490,13 +486,13 @@ void MenuCallback3(int value)
     break;
   }
 
-  filename="./obj/"+filename;
-  box.right_top={-100.0,-100.0,-100.0};
-  box.left_bottom={100.0,100.0,100.0};
+  filename = "./obj/" + filename;
+  box.right_top = {-100.0, -100.0, -100.0};
+  box.left_bottom = {100.0, 100.0, 100.0};
   printf("filename=%s\n", filename.c_str());
   vertices.clear();
   faces.clear();
-  readObj(filename, vertices, faces,box);
+  readObj(filename, vertices, faces, box);
   box.update_center();
   printf("radius=%.2f\n", box.get_radius());
   printf("right_top=(%.2f,%.2f,%.2f)\n", box.right_top.x, box.right_top.y, box.right_top.z);
@@ -505,10 +501,10 @@ void MenuCallback3(int value)
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  float radius=box.get_radius()*1.1;
-  glOrtho(box.center.x -radius, box.center.x +radius,
-          box.center.y -radius, box.center.y +radius,
+  float radius = box.get_radius() * 1.1;
+  glOrtho(box.center.x - radius, box.center.x + radius,
+          box.center.y - radius, box.center.y + radius,
           0.01, 10000);
-  camera={0,0,radius};
+  camera = {0, 0, radius};
   glutPostRedisplay();
 }
