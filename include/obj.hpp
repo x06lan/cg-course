@@ -1,3 +1,5 @@
+#include <GL/gl.h>
+#include <stdio.h>
 #include <fstream>
 #include <sstream>
 #include <vector>
@@ -83,67 +85,4 @@ void readObj(const std::string& filename, std::vector<Vector3d>& vertices, std::
     box.update_center();
 }
 
-void drawObj( std::vector<Vector3d>& vertices, std::vector<FaceIndices>& faces,unsigned int renderMode,int renderColor){
-    // std::random_device rd;
-    // std::mt19937 e2(rd());
-    // std::uniform_real_distribution<float> dist(0.0, 1.0);
-
-    if(renderMode==GL_TRIANGLES || renderMode==GL_LINES){
-        for(int i=0;i<faces.size();i++){
-            Vector3d v1 = vertices[faces[i].v1 - 1];
-            Vector3d v2 = vertices[faces[i].v2 - 1];
-            Vector3d v3 = vertices[faces[i].v3 - 1];
-            if(renderMode==GL_TRIANGLES){
-                glBegin(renderMode);
-                if (renderColor == 0)
-                    glColor3f(1.0, 1.0, 1.0);
-                else 
-                    glColor3f(generateRandomFloat(i*3),generateRandomFloat(i*3+1),generateRandomFloat(i*3+2));
-                // glTexCoord2f(1.0f, 1.0f);
-                glVertex3f(v1.x, v1.y, v1.z);
-                // glTexCoord2f(1.0f, 1.0f);
-                glVertex3f(v2.x, v2.y, v2.z);
-                // glTexCoord2f(1.0f, 1.0f);
-                glVertex3f(v3.x, v3.y, v3.z);
-                glEnd();
-            }
-            else if(renderMode ==GL_LINES){
-                glBegin(renderMode);
-
-                if (renderColor == 0)
-                    glColor3f(1.0, 1.0, 1.0);
-                else 
-                    glColor3f(generateRandomFloat(i*3),generateRandomFloat(i*3+1),generateRandomFloat(i*3+2));
-                glVertex3f(v1.x, v1.y, v1.z);
-                glVertex3f(v2.x, v2.y, v2.z);
-                glEnd();
-
-                glBegin(renderMode);
-                glVertex3f(v2.x, v2.y, v2.z);
-                glVertex3f(v3.x, v3.y, v3.z);
-                glEnd();
-
-                glBegin(renderMode);
-                glVertex3f(v1.x, v1.y, v1.z);
-                glVertex3f(v2.x, v2.y, v2.z);
-                glEnd();
-            }
-        }
-    }
-    else if (renderMode == GL_POINTS){
-        for(int i=0;i<vertices.size();i++){
-            Vector3d v = vertices[i];
-            glPointSize(10);
-            if (renderColor == 0)
-                glColor3f(1.0, 1.0, 1.0);
-            else 
-                glColor3f(generateRandomFloat(i*3),generateRandomFloat(i*3+1),generateRandomFloat(i*3+2));
-
-            glBegin(renderMode);
-            glVertex3f(v.x, v.y, v.z);
-            glEnd();
-        }
-    }
-
-}
 

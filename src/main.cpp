@@ -14,7 +14,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include "pryamid.h"
-#include "obj.h"
+#include "obj.hpp"
 #include <vector>
 #include <random>
 
@@ -251,6 +251,66 @@ void NormalKeyHandler(unsigned char key, int x, int y)
   }
 }
 
+void drawObj( std::vector<Vector3d>& vertices, std::vector<FaceIndices>& faces,unsigned int renderMode,int renderColor){
+
+    if(renderMode==GL_TRIANGLES || renderMode==GL_LINES){
+        for(int i=0;i<faces.size();i++){
+            Vector3d v1 = vertices[faces[i].v1 - 1];
+            Vector3d v2 = vertices[faces[i].v2 - 1];
+            Vector3d v3 = vertices[faces[i].v3 - 1];
+            if(renderMode==GL_TRIANGLES){
+                glBegin(renderMode);
+                if (renderColor == 0)
+                    glColor3f(1.0, 1.0, 1.0);
+                else 
+                    glColor3f(generateRandomFloat(i*3),generateRandomFloat(i*3+1),generateRandomFloat(i*3+2));
+                // glTexCoord2f(1.0f, 1.0f);
+                glVertex3f(v1.x, v1.y, v1.z);
+                // glTexCoord2f(1.0f, 1.0f);
+                glVertex3f(v2.x, v2.y, v2.z);
+                // glTexCoord2f(1.0f, 1.0f);
+                glVertex3f(v3.x, v3.y, v3.z);
+                glEnd();
+            }
+            else if(renderMode ==GL_LINES){
+                glBegin(renderMode);
+
+                if (renderColor == 0)
+                    glColor3f(1.0, 1.0, 1.0);
+                else 
+                    glColor3f(generateRandomFloat(i*3),generateRandomFloat(i*3+1),generateRandomFloat(i*3+2));
+                glVertex3f(v1.x, v1.y, v1.z);
+                glVertex3f(v2.x, v2.y, v2.z);
+                glEnd();
+
+                glBegin(renderMode);
+                glVertex3f(v2.x, v2.y, v2.z);
+                glVertex3f(v3.x, v3.y, v3.z);
+                glEnd();
+
+                glBegin(renderMode);
+                glVertex3f(v1.x, v1.y, v1.z);
+                glVertex3f(v2.x, v2.y, v2.z);
+                glEnd();
+            }
+        }
+    }
+    else if (renderMode == GL_POINTS){
+        for(int i=0;i<vertices.size();i++){
+            Vector3d v = vertices[i];
+            glPointSize(10);
+            if (renderColor == 0)
+                glColor3f(1.0, 1.0, 1.0);
+            else 
+                glColor3f(generateRandomFloat(i*3),generateRandomFloat(i*3+1),generateRandomFloat(i*3+2));
+
+            glBegin(renderMode);
+            glVertex3f(v.x, v.y, v.z);
+            glEnd();
+        }
+    }
+
+}
 int main(int argc, char **argv)
 {
   glutInit(&argc, argv);
@@ -327,38 +387,6 @@ void ChangeSize(int w, int h)
 }
 void RenderScene(void)
 {
-  // GLuint texture;
-  // int width, height, channels;
-  // unsigned char *imageData = stbi_load("../kjy01601.png", &width, &height, &channels, 0);
-
-  // glGenTextures(1, &texture);
-  // glBindTexture(GL_TEXTURE_2D, texture);
-
-  // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-  // if (imageData)
-  // {
-  //   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
-  //                width, height,
-  //                0, GL_RGB, GL_UNSIGNED_BYTE, imageData);
-  //   stbi_image_free(imageData);
-  // }
-  // else
-  // {
-  //   printf("nmsl");
-  // }
-
-  // glEnable(GL_TEXTURE_2D);
-  // glBindTexture(GL_TEXTURE_2D, texture);
-
-  // glBegin(GL_QUADS); // Example: Drawing a textured quad
-  //   glTexCoord2f(0.0f, 0.0f); glVertex3f(-1.0f, -1.0f,  0.0f);
-  //   glTexCoord2f(1.0f, 0.0f); glVertex3f( 1.0f, -1.0f,  0.0f);
-  //   glTexCoord2f(1.0f, 1.0f); glVertex3f( 1.0f,  1.0f,  0.0f);
-  //   glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f,  1.0f,  0.0f);
-  // glEnd();
-  // glBindTexture(GL_TEXTURE_2D, 0);
 
   glClearColor(0, 0, 0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -388,30 +416,12 @@ void RenderScene(void)
   glVertex3f(0, 0, 100);
   glEnd();
 
-  // point
-  // glColor3f(1.0, 0.0, 0.0);
-  // glPointSize(10);
-  // glBegin(GL_POINTS);
-  // glVertex2f(mousex * 10, mousey * 10);
-  // glEnd();
-  // target point
-  // glColor3f(1.0, 0.0, 1.0);
-  // glPointSize(10);
-  // glBegin(GL_POINTS);
-  // glVertex3f(target.x, target.y, target.z);
-  // glEnd();
-  // last point line
   glColor3f(1.0, 1.0, 1.0);
   glBegin(GL_LINES);
   glVertex3f(0,0,0);
   glVertex3f(arbitray.x, arbitray.y, arbitray.z);
   glEnd();
 
-  // float vx = (mousex );
-  // float vy = (mousey );
-  // float l = sqrtf(vx * vx + vy * vy);
-  // vx /= l;
-  // vy /= l;
   float lxy=sqrtf(pow(arbitray.x,2)+pow(arbitray.y,2));
   float lxz=sqrtf(pow(arbitray.x,2)+pow(arbitray.z,2));
 

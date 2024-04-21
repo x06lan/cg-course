@@ -17,7 +17,7 @@ set(SRC_FILES)
 # you need pre-install OpenGL, GLU, please google
 set(INCLUDE_FILES
     ${INCLUDE_DIR}/stb_image.h
-    ${INCLUDE_DIR}/obj.h
+    ${INCLUDE_DIR}/obj.hpp
 )
 set(SRC_FILES
 )
