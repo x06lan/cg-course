@@ -9,11 +9,29 @@
 | ![](https://imgur.com/RROwZdE.png) |                                    |                                    |
 
 ## require
-* cmake
-* g++
+* [cmake](https://github.com/Kitware/CMake/releases/download/v3.29.2/cmake-3.29.2-windows-x86_64.msi)
+
+<!-- ###  ubuntu
+
+* install [wsl](https://apps.microsoft.com/detail/9pdxgncfsczv?ocid=pdpshare&hl=en-us&gl=US)
+
+```
+sudo apt install g++
+sudo apt install cmake
+
+``` -->
 
 
 ## run
+**recommend use linux**
+### windows
+<!-- install `cmake tools` in your vscode -->
+```
+./ComputerGraph.exe ./obj/teddy.obj
+```
+
+
+### linux
 ```bash
 cmake -B build
 cmake --build build

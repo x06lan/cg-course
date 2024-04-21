@@ -1,5 +1,4 @@
 
-#include "freeglut_std.h"
 #include <GL/gl.h>
 #include <stdio.h>
 /*** freeglut***/
