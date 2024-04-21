@@ -57,8 +57,6 @@ jobs:
           cmake -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
           cmake --build build --target cg-course --config ${{ matrix.build_type }}
         
-          ehco "Moving binary"
-          ls build/${{ matrix.build_type }}
           mv build/${{ matrix.build_type }}/cg-course.exe build/
 
       - name: Uploading Binary
