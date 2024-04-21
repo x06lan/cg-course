@@ -27,7 +27,7 @@ sudo apt install cmake
 ### windows
 <!-- install `cmake tools` in your vscode -->
 ```
-./ComputerGraph.exe ./obj/teddy.obj
+./cg-course.exe ./obj/teddy.obj
 ```
 
 
@@ -35,7 +35,7 @@ sudo apt install cmake
 ```bash
 cmake -B build
 cmake --build build
-./build/ComputerGraph ./obj/teddy.obj
+./build/cg-course ./obj/teddy.obj
 ```
 ## key action
 | Key Pressed | Action                          |

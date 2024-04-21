@@ -35,12 +35,12 @@ jobs:
 
       - if: matrix.platform == 'linux'
         run: |
-          chmod +x cg-course/build/ComputerGraph
-          tar -cJvf cg-course-${{ github.ref_name }}-${{ matrix.platform }}.tar.xz ComputerGraph
+          chmod +x cg-course/build/cg-course
+          tar -cJvf cg-course-${{ github.ref_name }}-${{ matrix.platform }}.tar.xz cg-course
 
       - if: matrix.platform == 'windows'
         run: |
-          zip -r cg-course-${{ github.ref_name }}-${{ matrix.platform }}.zip ComputerGraph
+          zip -r cg-course-${{ github.ref_name }}-${{ matrix.platform }}.zip cg-course
 
       - if: matrix.platform == 'linux'
         uses: softprops/action-gh-release@v1
