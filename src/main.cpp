@@ -4,6 +4,7 @@
 /*** freeglut***/
 #ifdef _MSC_VER
 #include "windows.h"
+#pragma comment(lib, "opengl32.lib")
 #endif
 
 
