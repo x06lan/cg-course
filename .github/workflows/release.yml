@@ -23,7 +23,7 @@ jobs:
       - name: Pre-Download Setup
         run: |
           mkdir -p cg-course/build
-          mv cg-course
+          mv obj cg-course
 
       - name: Download Artifact
         uses: dawidd6/action-download-artifact@v2
