@@ -22,8 +22,8 @@ jobs:
 
       - name: Pre-Download Setup
         run: |
-          mkdir -p ComputerGraph/build
-          mv ComputerGraph
+          mkdir -p cg-course/build
+          mv cg-course
 
       - name: Download Artifact
         uses: dawidd6/action-download-artifact@v2
@@ -31,25 +31,25 @@ jobs:
           workflow: build.yml
           workflow_conclusion: success
           name: ${{ matrix.platform }}-binary
-          path: ComputerGraph/build
+          path: cg-course/build
 
       - if: matrix.platform == 'linux'
         run: |
-          chmod +x ComputerGraph/build/ComputerGraph
-          tar -cJvf ComputerGraph-${{ github.ref_name }}-${{ matrix.platform }}.tar.xz ComputerGraph
+          chmod +x cg-course/build/ComputerGraph
+          tar -cJvf cg-course-${{ github.ref_name }}-${{ matrix.platform }}.tar.xz ComputerGraph
 
       - if: matrix.platform == 'windows'
         run: |
-          zip -r ComputerGraph-${{ github.ref_name }}-${{ matrix.platform }}.zip ComputerGraph
+          zip -r cg-course-${{ github.ref_name }}-${{ matrix.platform }}.zip ComputerGraph
 
       - if: matrix.platform == 'linux'
         uses: softprops/action-gh-release@v1
         with:
-          files: ComputerGraph-${{ github.ref_name }}-${{ matrix.platform }}.tar.xz
+          files: cg-course-${{ github.ref_name }}-${{ matrix.platform }}.tar.xz
           draft: true
 
       - if: matrix.platform == 'windows'
         uses: softprops/action-gh-release@v1
         with:
-          files: ComputerGraph-${{ github.ref_name }}-${{ matrix.platform }}.zip
+          files: cg-course-${{ github.ref_name }}-${{ matrix.platform }}.zip
           draft: true
