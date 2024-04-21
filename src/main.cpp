@@ -2,11 +2,8 @@
 #include <GL/gl.h>
 #include <stdio.h>
 /*** freeglut***/
-#ifdef _MSC_VER
-#include "freeglut_std.h"
-#else
 #include <freeglut.h>
-#endif
+#include <freeglut_std.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"

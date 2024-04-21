@@ -8,7 +8,7 @@ set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
 set(INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
 
 add_subdirectory(thirdparty/freeglut)
-find_package(OpenGL REQUIRED)
+# find_package(OpenGL REQUIRED)
 
 # this two line don't work new.
 set(INCLUDE_FILE)
