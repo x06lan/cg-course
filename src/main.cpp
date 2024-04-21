@@ -2,6 +2,11 @@
 #include <GL/gl.h>
 #include <stdio.h>
 /*** freeglut***/
+#ifdef _MSC_VER
+#include "windows.h"
+#endif
+
+
 #include <freeglut.h>
 #include <freeglut_std.h>
 
