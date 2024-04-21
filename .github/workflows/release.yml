@@ -23,7 +23,7 @@ jobs:
       - name: Pre-Download Setup
         run: |
           mkdir -p ComputerGraph/build
-          mv assets ComputerGraph
+          mv ComputerGraph
 
       - name: Download Artifact
         uses: dawidd6/action-download-artifact@v2
