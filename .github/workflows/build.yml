@@ -6,6 +6,7 @@ on:
     branches:
       - master
       - mid
+      - hw*
 
 jobs:
   build:
