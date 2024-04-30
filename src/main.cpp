@@ -103,6 +103,9 @@ void MenuCallback1(int value)
   case 20:
     lines = 20;
     break;
+  case 100:
+    lines = 100;
+    break;
   }
   glutPostRedisplay();
 }
@@ -166,6 +169,7 @@ int main(int argc, char **argv)
   glutAddMenuEntry("10", 10);
   glutAddMenuEntry("15", 15);
   glutAddMenuEntry("20", 20);
+  glutAddMenuEntry("100", 100);
 
   glutCreateMenu(nullptr);
   glutAddSubMenu("grid", sub1);
