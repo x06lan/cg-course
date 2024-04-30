@@ -11,6 +11,7 @@
 #include <freeglut_std.h>
 
 #include "obj.hpp"
+#include "matrix.hpp"
 #include <vector>
 #include <random>
 
@@ -27,12 +28,15 @@ std::vector<Vector3d> vertices;
 std::vector<FaceIndices> faces;
 BoundBox box;
 
+// std::vector<Vector2d> points = {{0, 1}, {-1, 0}, {0, -1}, {1, 0}, {0, 1}};
+// std::vector<Vector2d> points = {{0, 0}, {1, 0}, {1, 1}, {0.0, 1}, {-1, 1}, {-1, 0}, {1, -1}, {0.0, -1}, {-1, -1}};
+std::vector<Vector2d> points = {{0, 0}};
 // int windowx = 1920 / 2;
+// int windowy = 1080 - 40;
 int windowx = 1080 - 40;
 int windowy = 1080 - 40;
-float mousex = 0;
-float mousey = 0;
-float lines = 15;
+float lines = 100;
+float padding = 0.05;
 
 Vector3d camera = {0, 0, -1};
 Vector3d target = {0, 0, 0};
@@ -68,15 +72,21 @@ void MouseHandler(int button, int state, int x, int y)
 
   if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
   {
-    mousex = ((float)x / (float)windowx) * 2 - 1;
-    mousey = -2 * ((float)y / (float)windowy) + 1;
+    float mousex = ((float)x / (float)windowx) * 2 - 1;
+    float mousey = -2 * ((float)y / (float)windowy) + 1;
+    mousex = clamp(mousex * (1.0 + padding), -1, 1);
+    mousey = clamp(mousey * (1.0 + padding), -1, 1);
+
+    points.insert(points.begin(), {mousex, mousey});
+    // points.pop_back();
+    // points.push_back({mousex, mousey});
   }
   if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
   {
     // mousex = ((float)x / (float)windowx) * 2 - 1;
     // mousey = -2 * ((float)y / (float)windowy) + 1;
   }
-  printf("mouse x=%.2f,y=%.2f\n", mousex, mousey);
+  // printf("mouse x=%.2f,y=%.2f\n", mousex, mousey);
   // printf("w=%d,h=%d\n", windowx, windowy);
 }
 
@@ -121,6 +131,27 @@ void NormalKeyHandler(unsigned char key, int x, int y)
   }
 }
 
+float remap(float value, float padding, float lines)
+{
+  float v = floor((value + 1) * 0.5 * lines);
+  v = clamp(v, 0, lines - 1);
+  float unlines = 1.0 / lines;
+  v = v * unlines * 2.0 - 1 + unlines;
+  return v;
+}
+float blockId(float value, float padding, float lines)
+{
+  float v = floor((value + 1) * 0.5 * lines);
+  v = clamp(v, 0, lines - 1);
+  return v;
+}
+float blockIdCoord(float v)
+{
+  // v = clamp(v, 0, lines - 1);
+  float unlines = 1.0 / lines;
+  v = v * unlines * 2.0 - 1 + unlines;
+  return v;
+}
 int main(int argc, char **argv)
 {
   glutInit(&argc, argv);
@@ -164,8 +195,8 @@ void ChangeSize(int w, int h)
   // windowy = h;
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glOrtho(1.001, -1.001,
-          -1.001, 1.001,
+  glOrtho(1.0 + padding, -1.0 - padding,
+          -1.0 - padding, 1.0 + padding,
           0.01, 10000);
 }
 void RenderScene(void)
@@ -182,6 +213,7 @@ void RenderScene(void)
       0, 1, 0);
 
   glColor3f(1.0, 1.0, 1.0);
+  // x axis line
   for (int i = 0; i <= lines; i++)
   {
     glBegin(GL_LINES);
@@ -191,6 +223,7 @@ void RenderScene(void)
     glVertex3f(x, 1, 0);
     glEnd();
   }
+  // y axis line
   for (int i = 0; i <= lines; i++)
   {
     glBegin(GL_LINES);
@@ -200,32 +233,81 @@ void RenderScene(void)
     glEnd();
   }
   float unlines = 1.0 / lines;
-  float pointx = floor((mousex + 1) * 0.5 * lines);
-  float pointy = floor((mousey + 1) * 0.5 * lines);
-  // printf("%.2f,%.2f\n", mousex, mousey);
-  // printf("pointx=%.2f,pointy=%.2f %f \n", pointx, pointy, lines);
-  pointx *= unlines * 2.0;
-  pointy *= unlines * 2.0;
 
-  pointx += -1;
-  pointy += -1;
-  pointx += unlines * 1.0;
-  pointy += unlines * 1.0;
-  glColor3f(1.0, 1.0, 1.0);
-  glPointSize(windowx * unlines);
-  glBegin(GL_POINTS);
-  glVertex3f(pointx, pointy, 0.0);
+  // red points
+  for (int i = points.size() - 1; i >= 0; i--)
+  {
+    float pointx = remap(points[i].x, padding, lines);
+    float pointy = remap(points[i].y, padding, lines);
+    glColor3f(1.0, 0.0, 0.0);
+    glPointSize(windowx / (1.0 + padding) * unlines);
+    glBegin(GL_POINTS);
+    glVertex3f(pointx, pointy, 1);
+    glEnd();
+  }
 
-  glEnd();
+  // green lines
+  glColor3f(0.0, 1.0, 0.0);
+  for (int i = 0; i < points.size() - 1; i++)
+  {
 
-  // glVertex3f(-1, y, 0);
-  // glVertex3f(1, y, 0);
-  // glBegin(GL_LINES);
-  // glVertex3f(100, 0, 0);
-  // glVertex3f(0, 0, 0);
-  // glEnd();
+    float x1 = blockId(points[i].x, padding, lines);
+    float y1 = blockId(points[i].y, padding, lines);
+    float x2 = blockId(points[i + 1].x, padding, lines);
+    float y2 = blockId(points[i + 1].y, padding, lines);
 
-  glColor3f(1.0, 1.0, 0.0);
+    float x = x1;
+    float y = y1;
+    float dx = x2 - x1;
+    float dy = y2 - y1;
+
+    bool flip = false;
+    if (abs(dy / dx) > 1.0)
+    {
+      float temp = x1;
+      x1 = y1;
+      y1 = temp;
+
+      temp = x2;
+      x2 = y2;
+      y2 = temp;
+
+      dx = x2 - x1;
+      dy = y2 - y1;
+
+      x = x1;
+      y = y1;
+      flip = true;
+    }
+
+    float d = dx > 0 ? 1 : -1;
+    while ((d > 0 && x < x2) || (d < 0 && x > x2))
+    {
+
+      float floorY = floor(y);
+
+      y = y1 + dy / dx * (x - x1);
+      if (abs(floor(y) - floorY) > 0.5)
+        glColor3f(0.0, 0.0, 1.0);
+      else
+        glColor3f(0.0, 1.0, 0.0);
+
+      float px = blockIdCoord(floor(x));
+      float py = blockIdCoord(floor(y));
+
+      if (flip)
+      {
+        float temp = px;
+        px = py;
+        py = temp;
+      }
+
+      glBegin(GL_POINTS);
+      glVertex3f(px, py, 10);
+      glEnd();
+      x += d;
+    }
+  }
 
   glutSwapBuffers();
 }

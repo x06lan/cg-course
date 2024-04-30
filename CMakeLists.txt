@@ -17,6 +17,7 @@ set(SRC_FILES)
 # you need pre-install OpenGL, GLU, please google
 set(INCLUDE_FILES
     ${INCLUDE_DIR}/obj.hpp
+    ${INCLUDE_DIR}/matrix.hpp
 )
 set(SRC_FILES
 )
