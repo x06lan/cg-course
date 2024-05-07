@@ -162,56 +162,69 @@ void drawLine(Vector2d a, Vector2d b)
   float x2 = blockId(b.x, padding, lines);
   float y2 = blockId(b.y, padding, lines);
 
-  float x = x1;
-  float y = y1;
-  float dx = x2 - x1;
-  float dy = y2 - y1;
+  int magic_number_x = x2 - x1 > 0 ? 1 : -1;
+  int magic_number_y = y2 - y1 > 0 ? 1 : -1;
 
-  bool flip = false;
-  if (abs(dy / dx) > 1.0)
+  int dx = (x2 - x1) * magic_number_x;
+  int dy = (y2 - y1) * magic_number_y;
+
+  // start point / init point
+  // drawPoint(X1, Y1);
+  printf("dx=%d,dy=%d\n", dx, dy);
+
+  if (dy <= dx)
   {
-    float temp = x1;
-    x1 = y1;
-    y1 = temp;
-
-    temp = x2;
-    x2 = y2;
-    y2 = temp;
-
-    dx = x2 - x1;
-    dy = y2 - y1;
-
-    x = x1;
-    y = y1;
-    flip = true;
-  }
-
-  float d = dx > 0 ? 1 : -1;
-  while ((d > 0 && x < x2) || (d < 0 && x > x2))
-  {
-
-    float floorY = floor(y);
-
-    y = y1 + dy / dx * (x - x1);
-    if (abs(floor(y) - floorY) > 0.5)
-      glColor3f(0.0, 0.0, 1.0);
-    else
-      glColor3f(0.0, 1.0, 0.0);
-
-    float px = blockIdCoord(floor(x));
-    float py = blockIdCoord(floor(y));
-
-    if (flip)
+    int d = dy - (dx / 2);
+    int y = 0;
+    for (int x = 1; x < dx; x++)
     {
-      float temp = px;
-      px = py;
-      py = temp;
+      printf("x=%d,y=%d,d=%d\n", x, y, d);
+      if (d < 0)
+      {
+        // E or East is chosen
+        d = d + dy;
+        glColor3f(0, 1, 0);
+      }
+      else
+      {
+        // NE or North East is chosen
+        d += (dy - dx);
+        y++;
+        glColor3f(0, 0, 1);
+      }
+      float px = blockIdCoord(x1 + x * magic_number_x);
+      float py = blockIdCoord(y1 + y * magic_number_y);
+      glBegin(GL_POINTS);
+      glVertex3f(px, py, 1);
+      glEnd();
     }
-
-    glBegin(GL_POINTS);
-    glVertex3f(px, py, 10);
-    glEnd();
-    x += d;
+  }
+  else
+  {
+    int d = dx - (dy / 2);
+    int x = 0;
+    for (int y = 1; y < dy; y++)
+    {
+      // printf("x=%d,y=%d,d=%d\n", x, y, d);
+      if (d < 0)
+      {
+        // E or East is chosen
+        d = d + dx;
+        glColor3f(0, 1, 0);
+      }
+      else
+      {
+        // NE or North East is chosen
+        d += (dx - dy);
+        x++;
+        glColor3f(0, 0, 1);
+      }
+      float px = blockIdCoord(x1 + x * magic_number_x);
+      float py = blockIdCoord(y1 + y * magic_number_y);
+      glBegin(GL_POINTS);
+      glVertex3f(px, py, 1);
+      glEnd();
+    }
   }
 }
 
@@ -331,7 +344,6 @@ void RenderScene(void)
     box.push_point({b.x, b.y, 0});
     box.push_point({c.x, c.y, 0});
 
-    printf("center=(%.2f,%.2f,%.2f)\n", box.right_top.x, box.right_top.y, box.right_top.z);
     Vector2d right_top = {box.right_top.x, box.right_top.y};
     Vector2d left_bottom = {box.left_bottom.x, box.left_bottom.y};
 
@@ -340,7 +352,6 @@ void RenderScene(void)
 
     auto y = blockId(left_bottom.y, padding, lines);
     auto yb = blockId(right_top.y, padding, lines);
-    printf("x=%.2f,xb=%.2f,y=%.2f,yb=%.2f\n", x, xb, y, yb);
     for (int j = x; j <= xb; j++)
     {
       for (int k = y; k <= yb; k++)
@@ -352,14 +363,14 @@ void RenderScene(void)
         {
           glColor3f(1.0, 0.0, 1.0);
           glBegin(GL_POINTS);
-          glVertex3f(px, py, 11);
+          glVertex3f(px, py, i);
           glEnd();
         }
         else if (!isLeft(a, b, {px, py}) && !isLeft(b, c, {px, py}) && !isLeft(c, a, {px, py}))
         {
           glColor3f(0.5, 1.0, 1.0);
           glBegin(GL_POINTS);
-          glVertex3f(px, py, 11);
+          glVertex3f(px, py, i);
           glEnd();
         }
       }
