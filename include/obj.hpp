@@ -19,11 +19,18 @@ struct FaceIndices
 class BoundBox
 {
 public:
-    Vector3d center;
+    Vector3d center = {0, 0, 0};
     Vector3d right_top;
     Vector3d left_bottom;
+    bool pushed = false;
     void push_point(Vector3d vertex)
     {
+        if (!pushed)
+        {
+            right_top = vertex;
+            left_bottom = vertex;
+            pushed = true;
+        }
         if (vertex.x > right_top.x)
         {
             right_top.x = vertex.x;

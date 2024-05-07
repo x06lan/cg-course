@@ -30,7 +30,7 @@ BoundBox box;
 
 // std::vector<Vector2d> points = {{0, 1}, {-1, 0}, {0, -1}, {1, 0}, {0, 1}};
 // std::vector<Vector2d> points = {{0, 0}, {1, 0}, {1, 1}, {0.0, 1}, {-1, 1}, {-1, 0}, {1, -1}, {0.0, -1}, {-1, -1}};
-std::vector<Vector2d> points = {{0, 0}};
+std::vector<Vector2d> points = {};
 // int windowx = 1920 / 2;
 // int windowy = 1080 - 40;
 int windowx = 1080 - 40;
@@ -77,9 +77,9 @@ void MouseHandler(int button, int state, int x, int y)
     mousex = clamp(mousex * (1.0 + padding), -1, 1);
     mousey = clamp(mousey * (1.0 + padding), -1, 1);
 
-    points.insert(points.begin(), {mousex, mousey});
+    // points.insert(points.begin(), {mousex, mousey});
     // points.pop_back();
-    // points.push_back({mousex, mousey});
+    points.push_back({mousex, mousey});
   }
   if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
   {
@@ -155,6 +155,71 @@ float blockIdCoord(float v)
   v = v * unlines * 2.0 - 1 + unlines;
   return v;
 }
+void drawLine(Vector2d a, Vector2d b)
+{
+  float x1 = blockId(a.x, padding, lines);
+  float y1 = blockId(a.y, padding, lines);
+  float x2 = blockId(b.x, padding, lines);
+  float y2 = blockId(b.y, padding, lines);
+
+  float x = x1;
+  float y = y1;
+  float dx = x2 - x1;
+  float dy = y2 - y1;
+
+  bool flip = false;
+  if (abs(dy / dx) > 1.0)
+  {
+    float temp = x1;
+    x1 = y1;
+    y1 = temp;
+
+    temp = x2;
+    x2 = y2;
+    y2 = temp;
+
+    dx = x2 - x1;
+    dy = y2 - y1;
+
+    x = x1;
+    y = y1;
+    flip = true;
+  }
+
+  float d = dx > 0 ? 1 : -1;
+  while ((d > 0 && x < x2) || (d < 0 && x > x2))
+  {
+
+    float floorY = floor(y);
+
+    y = y1 + dy / dx * (x - x1);
+    if (abs(floor(y) - floorY) > 0.5)
+      glColor3f(0.0, 0.0, 1.0);
+    else
+      glColor3f(0.0, 1.0, 0.0);
+
+    float px = blockIdCoord(floor(x));
+    float py = blockIdCoord(floor(y));
+
+    if (flip)
+    {
+      float temp = px;
+      px = py;
+      py = temp;
+    }
+
+    glBegin(GL_POINTS);
+    glVertex3f(px, py, 10);
+    glEnd();
+    x += d;
+  }
+}
+
+bool isLeft(Vector2d l1, Vector2d l2, Vector2d p)
+{
+  return (l2.x - l1.x) * (p.y - l1.y) - (l2.y - l1.y) * (p.x - l1.x) > 0.0;
+}
+
 int main(int argc, char **argv)
 {
   glutInit(&argc, argv);
@@ -251,65 +316,53 @@ void RenderScene(void)
   }
 
   // green lines
-  glColor3f(0.0, 1.0, 0.0);
-  for (int i = 0; i < points.size() - 1; i++)
+  for (int i = 0; i < points.size() / 3; i++)
   {
+    Vector2d a = points[i * 3];
+    Vector2d b = points[i * 3 + 1];
+    Vector2d c = points[i * 3 + 2];
 
-    float x1 = blockId(points[i].x, padding, lines);
-    float y1 = blockId(points[i].y, padding, lines);
-    float x2 = blockId(points[i + 1].x, padding, lines);
-    float y2 = blockId(points[i + 1].y, padding, lines);
+    drawLine(a, b);
+    drawLine(b, c);
+    drawLine(c, a);
 
-    float x = x1;
-    float y = y1;
-    float dx = x2 - x1;
-    float dy = y2 - y1;
+    BoundBox box;
+    box.push_point({a.x, a.y, 0});
+    box.push_point({b.x, b.y, 0});
+    box.push_point({c.x, c.y, 0});
 
-    bool flip = false;
-    if (abs(dy / dx) > 1.0)
+    printf("center=(%.2f,%.2f,%.2f)\n", box.right_top.x, box.right_top.y, box.right_top.z);
+    Vector2d right_top = {box.right_top.x, box.right_top.y};
+    Vector2d left_bottom = {box.left_bottom.x, box.left_bottom.y};
+
+    auto x = blockId(left_bottom.x, padding, lines);
+    auto xb = blockId(right_top.x, padding, lines);
+
+    auto y = blockId(left_bottom.y, padding, lines);
+    auto yb = blockId(right_top.y, padding, lines);
+    printf("x=%.2f,xb=%.2f,y=%.2f,yb=%.2f\n", x, xb, y, yb);
+    for (int j = x; j <= xb; j++)
     {
-      float temp = x1;
-      x1 = y1;
-      y1 = temp;
-
-      temp = x2;
-      x2 = y2;
-      y2 = temp;
-
-      dx = x2 - x1;
-      dy = y2 - y1;
-
-      x = x1;
-      y = y1;
-      flip = true;
-    }
-
-    float d = dx > 0 ? 1 : -1;
-    while ((d > 0 && x < x2) || (d < 0 && x > x2))
-    {
-
-      float floorY = floor(y);
-
-      y = y1 + dy / dx * (x - x1);
-      if (abs(floor(y) - floorY) > 0.5)
-        glColor3f(0.0, 0.0, 1.0);
-      else
-        glColor3f(0.0, 1.0, 0.0);
-
-      float px = blockIdCoord(floor(x));
-      float py = blockIdCoord(floor(y));
-
-      if (flip)
+      for (int k = y; k <= yb; k++)
       {
-        float temp = px;
-        px = py;
-        py = temp;
-      }
+        float px = blockIdCoord(floor(j));
+        float py = blockIdCoord(floor(k));
 
-      glBegin(GL_POINTS);
-      glVertex3f(px, py, 10);
-      glEnd();
-      x += d;
+        if (isLeft(a, b, {px, py}) && isLeft(b, c, {px, py}) && isLeft(c, a, {px, py}))
+        {
+          glColor3f(1.0, 0.0, 1.0);
+          glBegin(GL_POINTS);
+          glVertex3f(px, py, 11);
+          glEnd();
+        }
+        else if (!isLeft(a, b, {px, py}) && !isLeft(b, c, {px, py}) && !isLeft(c, a, {px, py}))
+        {
+          glColor3f(0.5, 1.0, 1.0);
+          glBegin(GL_POINTS);
+          glVertex3f(px, py, 11);
+          glEnd();
+        }
+      }
     }
   }
 
