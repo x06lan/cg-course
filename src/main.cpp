@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <freeglut.h>
 #include <freeglut_std.h>
+#include "time.h"
 
 #include "obj.hpp"
 #include "matrix.hpp"
@@ -40,6 +41,20 @@ float padding = 0.05;
 
 Vector3d camera = {0, 0, -1};
 Vector3d target = {0, 0, 0};
+
+bool update = false;
+int update_time = 100;
+
+int draw_id = 0;
+void Timer(int value)
+{
+  // RenderScene();
+  glutPostRedisplay(); // Post re-paint request to activate display()
+
+  draw_id += 1;
+  glutTimerFunc(update_time, Timer, 0); // next Timer call milliseconds later
+}
+
 void Loop()
 {
   RenderScene();
@@ -170,7 +185,7 @@ void drawLine(Vector2d a, Vector2d b)
 
   // start point / init point
   // drawPoint(X1, Y1);
-  printf("dx=%d,dy=%d\n", dx, dy);
+  // printf("dx=%d,dy=%d\n", dx, dy);
 
   if (dy <= dx)
   {
@@ -178,7 +193,7 @@ void drawLine(Vector2d a, Vector2d b)
     int y = 0;
     for (int x = 1; x < dx; x++)
     {
-      printf("x=%d,y=%d,d=%d\n", x, y, d);
+      // printf("x=%d,y=%d,d=%d\n", x, y, d);
       if (d < 0)
       {
         // E or East is chosen
@@ -254,14 +269,15 @@ int main(int argc, char **argv)
 
   glutAttachMenu(GLUT_RIGHT_BUTTON);
 
-  RenderScene();
+  // RenderScene();
   glutSpecialFunc(SpecialKeyHandler);
   glutKeyboardFunc(NormalKeyHandler);
   glutMouseFunc(MouseHandler);
 
   glutReshapeFunc(ChangeSize);
   glutDisplayFunc(RenderScene);
-  glutIdleFunc(Loop);
+  // glutIdleFunc(Loop);
+  glutTimerFunc(0, Timer, 0);
 
   glutMainLoop(); // http://www.programmer-club.com.tw/ShowSameTitleN/opengl/2288.html
   return 0;
@@ -352,6 +368,7 @@ void RenderScene(void)
 
     auto y = blockId(left_bottom.y, padding, lines);
     auto yb = blockId(right_top.y, padding, lines);
+    int id = 0;
     for (int j = x; j <= xb; j++)
     {
       for (int k = y; k <= yb; k++)
@@ -363,19 +380,22 @@ void RenderScene(void)
         {
           glColor3f(1.0, 0.0, 1.0);
           glBegin(GL_POINTS);
-          glVertex3f(px, py, i);
+          glVertex3f(px, py, 10);
           glEnd();
+          id += 1;
         }
         else if (!isLeft(a, b, {px, py}) && !isLeft(b, c, {px, py}) && !isLeft(c, a, {px, py}))
         {
           glColor3f(0.5, 1.0, 1.0);
           glBegin(GL_POINTS);
-          glVertex3f(px, py, i);
+          glVertex3f(px, py, 10);
           glEnd();
+          id += 1;
         }
       }
     }
   }
 
   glutSwapBuffers();
+  // sleep
 }
