@@ -31,7 +31,8 @@ BoundBox box;
 
 // std::vector<Vector2d> points = {{0, 1}, {-1, 0}, {0, -1}, {1, 0}, {0, 1}};
 // std::vector<Vector2d> points = {{0, 0}, {1, 0}, {1, 1}, {0.0, 1}, {-1, 1}, {-1, 0}, {1, -1}, {0.0, -1}, {-1, -1}};
-std::vector<Vector2d> points = {};
+std::vector<Vector2d> points = {{0, -1}, {0.1, 0.51}, {-0.8, 0.5}, {-0.8, 0.5}, {-0.8, 0.5}};
+std::vector<Vector3d> colors = {{0, 1, 1}, {0.5, 0.5, 0.0}, {0.5, 0.5, 1}, {0.7, 0.1, 0}, {0.5, 0.5, 0.5}};
 // int windowx = 1920 / 2;
 // int windowy = 1080 - 40;
 int windowx = 1080 - 40;
@@ -43,7 +44,7 @@ Vector3d camera = {0, 0, -1};
 Vector3d target = {0, 0, 0};
 
 bool update = false;
-int update_time = 100;
+unsigned int update_time = 1;
 
 int draw_id = 0;
 void Timer(int value)
@@ -95,6 +96,7 @@ void MouseHandler(int button, int state, int x, int y)
     // points.insert(points.begin(), {mousex, mousey});
     // points.pop_back();
     points.push_back({mousex, mousey});
+    colors.push_back({generateRandomFloat(x), generateRandomFloat(y), generateRandomFloat(x + y)});
   }
   if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
   {
@@ -170,7 +172,27 @@ float blockIdCoord(float v)
   v = v * unlines * 2.0 - 1 + unlines;
   return v;
 }
-void drawLine(Vector2d a, Vector2d b)
+float lerp(float a, float b, float t)
+{
+  return a + (b - a) * t;
+}
+Vector2d lerp(Vector2d a, Vector2d b, float t)
+{
+  Vector2d v;
+  v.x = lerp(a.x, b.x, t);
+  v.y = lerp(a.y, b.y, t);
+  return v;
+}
+Vector3d lerp(Vector3d a, Vector3d b, float t)
+{
+  Vector3d v;
+  v.x = lerp(a.x, b.x, t);
+  v.y = lerp(a.y, b.y, t);
+  v.z = lerp(a.z, b.z, t);
+  return v;
+}
+
+void drawLine(Vector2d a, Vector2d b, Vector3d color1, Vector3d color2)
 {
   float x1 = blockId(a.x, padding, lines);
   float y1 = blockId(a.y, padding, lines);
@@ -198,19 +220,20 @@ void drawLine(Vector2d a, Vector2d b)
       {
         // E or East is chosen
         d = d + dy;
-        glColor3f(0, 1, 0);
       }
       else
       {
         // NE or North East is chosen
         d += (dy - dx);
         y++;
-        glColor3f(0, 0, 1);
       }
+
+      auto color = lerp(color1, color2, (float)x / dx);
+      glColor3f(color.x, color.y, color.z);
       float px = blockIdCoord(x1 + x * magic_number_x);
       float py = blockIdCoord(y1 + y * magic_number_y);
       glBegin(GL_POINTS);
-      glVertex3f(px, py, 1);
+      glVertex3f(px, py, 5);
       glEnd();
     }
   }
@@ -225,19 +248,19 @@ void drawLine(Vector2d a, Vector2d b)
       {
         // E or East is chosen
         d = d + dx;
-        glColor3f(0, 1, 0);
       }
       else
       {
         // NE or North East is chosen
         d += (dx - dy);
         x++;
-        glColor3f(0, 0, 1);
       }
+      auto color = lerp(color1, color2, (float)y / dy);
+      glColor3f(color.x, color.y, color.z);
       float px = blockIdCoord(x1 + x * magic_number_x);
       float py = blockIdCoord(y1 + y * magic_number_y);
       glBegin(GL_POINTS);
-      glVertex3f(px, py, 1);
+      glVertex3f(px, py, 5);
       glEnd();
     }
   }
@@ -245,7 +268,7 @@ void drawLine(Vector2d a, Vector2d b)
 
 bool isLeft(Vector2d l1, Vector2d l2, Vector2d p)
 {
-  return (l2.x - l1.x) * (p.y - l1.y) - (l2.y - l1.y) * (p.x - l1.x) > 0.0;
+  return (l2.x - l1.x) * (p.y - l1.y) - (l2.y - l1.y) * (p.x - l1.x) >= 0.0;
 }
 
 int main(int argc, char **argv)
@@ -344,58 +367,106 @@ void RenderScene(void)
     glEnd();
   }
 
-  // green lines
-  for (int i = 0; i < points.size() / 3; i++)
+  auto loop = points;
+  auto loop_color = colors;
+  loop.push_back(points[0]);
+  loop_color.push_back(colors[0]);
+
+  for (int i = 0; i < loop.size() - 1; i++)
   {
-    Vector2d a = points[i * 3];
-    Vector2d b = points[i * 3 + 1];
-    Vector2d c = points[i * 3 + 2];
+    Vector2d p1 = loop[i];
+    Vector2d p2 = loop[i + 1];
 
-    drawLine(a, b);
-    drawLine(b, c);
-    drawLine(c, a);
+    Vector3d c1 = loop_color[i];
+    Vector3d c2 = loop_color[i + 1];
 
-    BoundBox box;
-    box.push_point({a.x, a.y, 0});
-    box.push_point({b.x, b.y, 0});
-    box.push_point({c.x, c.y, 0});
+    drawLine(p1, p2, c1, c2);
+  }
+  int id = 0;
+  // green lines
 
-    Vector2d right_top = {box.right_top.x, box.right_top.y};
-    Vector2d left_bottom = {box.left_bottom.x, box.left_bottom.y};
-
-    auto x = blockId(left_bottom.x, padding, lines);
-    auto xb = blockId(right_top.x, padding, lines);
-
-    auto y = blockId(left_bottom.y, padding, lines);
-    auto yb = blockId(right_top.y, padding, lines);
-    int id = 0;
-    for (int j = x; j <= xb; j++)
+  for (int k = 0; k < lines; k++)
+  {
+    for (int j = 0; j < lines; j++)
     {
-      for (int k = y; k <= yb; k++)
+      float px = blockIdCoord(floor(j));
+      float py = blockIdCoord(floor(k));
+      Vector2d p = {px, py};
+      bool inside = true;
+      Vector3d l_color = {0, 0, 0};
+      Vector3d r_color = {0, 0, 0};
+      Vector2d lp = {2, 2};
+      Vector2d rp = {2, 2};
+      for (int i = 0; i < loop.size() - 1; i++)
       {
-        float px = blockIdCoord(floor(j));
-        float py = blockIdCoord(floor(k));
+        Vector2d p1 = loop[i];
+        Vector2d p2 = loop[i + 1];
 
-        if (isLeft(a, b, {px, py}) && isLeft(b, c, {px, py}) && isLeft(c, a, {px, py}))
+        Vector3d c1 = loop_color[i];
+        Vector3d c2 = loop_color[i + 1];
+        if (!isLeft(p1, p2, p))
         {
-          glColor3f(1.0, 0.0, 1.0);
-          glBegin(GL_POINTS);
-          glVertex3f(px, py, 10);
-          glEnd();
-          id += 1;
+          inside = false;
+          break;
         }
-        else if (!isLeft(a, b, {px, py}) && !isLeft(b, c, {px, py}) && !isLeft(c, a, {px, py}))
+
+        if (p1.y > p2.y)
         {
-          glColor3f(0.5, 1.0, 1.0);
-          glBegin(GL_POINTS);
-          glVertex3f(px, py, 10);
-          glEnd();
-          id += 1;
+          Vector2d temp = p1;
+          p1 = p2;
+          p2 = temp;
+
+          Vector3d temp_color = c1;
+          c1 = c2;
+          c2 = temp_color;
+        }
+        if (p.y <= p1.y || p.y >= p2.y)
+          continue;
+
+        // drawLine(p1, p2, c1, c2);
+
+        auto edge_point = lerp(p1, p2, (p.y - p1.y) / (p2.y - p1.y));
+        edge_point = {blockId(edge_point.x, padding, lines), blockId(edge_point.y, padding, lines)};
+        edge_point = {blockIdCoord(edge_point.x + 1), blockIdCoord(edge_point.y)};
+        if (edge_point.x < p.x)
+        {
+          lp = edge_point;
+          l_color = lerp(c1, c2, (p.y - p1.y) / (p2.y - p1.y));
+        }
+        else
+        {
+          rp = edge_point;
+          rp.x -= 2.0 / lines;
+          r_color = lerp(c1, c2, (p.y - p1.y) / (p2.y - p1.y));
         }
       }
+      if (inside)
+      {
+        id += 1;
+        if (id > draw_id)
+        {
+          glColor3f(1, 1, 1);
+          glBegin(GL_POINTS);
+          glVertex3f(rp.x, rp.y, 2);
+          glEnd();
+
+          glBegin(GL_POINTS);
+          glVertex3f(lp.x, lp.y, 2);
+          glEnd();
+          break;
+        }
+
+        auto color = lerp(l_color, r_color, (p.x - lp.x) / (rp.x - lp.x));
+        glColor3f(color.x, color.y, color.z);
+
+        glBegin(GL_POINTS);
+        glVertex3f(px, py, 10);
+        glEnd();
+      }
+      if (id > draw_id)
+        break;
     }
   }
-
   glutSwapBuffers();
-  // sleep
 }
+// sleep
