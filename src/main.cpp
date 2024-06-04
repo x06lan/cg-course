@@ -53,6 +53,106 @@ GLfloat specref[] = {1.0f, 1.0f, 1.0f, 1.0f};
 // Transformation matrix to project shadow
 M3DMatrix44f shadowMat;
 
+void cube()
+{
+  {
+    // Define the vertices for the cube
+    // M3DVector3f vCube[8] = {
+    //     {0.0f, 0.0f, 0.0f},    // 0 Bottom back left
+    //     {15.0f, 0.0f, 0.0f},   // 1 Bottom back right
+    //     {15.0f, 15.0f, 0.0f},  // 2 Top back right
+    //     {0.0f, 15.0f, 0.0f},   // 3 Top back left
+    //     {0.0f, 0.0f, 15.0f},   // 4 Bottom front left
+    //     {15.0f, 0.0f, 15.0f},  // 5 Bottom front right
+    //     {15.0f, 15.0f, 15.0f}, // 6 Top front right
+    //     {0.0f, 15.0f, 15.0f}   // 7 Top front left
+    // };
+    M3DVector3f vCube[8] = {
+        {-7.5f, -7.5f, -7.5f}, // 0 Bottom back left
+        {7.5f, -7.5f, -7.5f},  // 1 Bottom back right
+        {7.5f, 7.5f, -7.5f},   // 2 Top back right
+        {-7.5f, 7.5f, -7.5f},  // 3 Top back left
+        {-7.5f, -7.5f, 7.5f},  // 4 Bottom front left
+        {7.5f, -7.5f, 7.5f},   // 5 Bottom front right
+        {7.5f, 7.5f, 7.5f},    // 6 Top front right
+        {-7.5f, 7.5f, 7.5f}    // 7 Top front left
+    };
+
+    M3DVector3f vNormal;
+
+    // Front face
+    m3dFindNormal(vNormal, vCube[4], vCube[5], vCube[6]);
+    glNormal3fv(vNormal);
+    glVertex3fv(vCube[4]);
+    glVertex3fv(vCube[5]);
+    glVertex3fv(vCube[6]);
+    m3dFindNormal(vNormal, vCube[4], vCube[6], vCube[7]);
+    glNormal3fv(vNormal);
+    glVertex3fv(vCube[4]);
+    glVertex3fv(vCube[6]);
+    glVertex3fv(vCube[7]);
+
+    // Back face
+    m3dFindNormal(vNormal, vCube[1], vCube[0], vCube[3]);
+    glNormal3fv(vNormal);
+    glVertex3fv(vCube[1]);
+    glVertex3fv(vCube[0]);
+    glVertex3fv(vCube[3]);
+    m3dFindNormal(vNormal, vCube[1], vCube[3], vCube[2]);
+    glNormal3fv(vNormal);
+    glVertex3fv(vCube[1]);
+    glVertex3fv(vCube[3]);
+    glVertex3fv(vCube[2]);
+
+    // Left face
+    m3dFindNormal(vNormal, vCube[0], vCube[4], vCube[7]);
+    glNormal3fv(vNormal);
+    glVertex3fv(vCube[0]);
+    glVertex3fv(vCube[4]);
+    glVertex3fv(vCube[7]);
+    m3dFindNormal(vNormal, vCube[0], vCube[7], vCube[3]);
+    glNormal3fv(vNormal);
+    glVertex3fv(vCube[0]);
+    glVertex3fv(vCube[7]);
+    glVertex3fv(vCube[3]);
+
+    // Right face
+    m3dFindNormal(vNormal, vCube[5], vCube[1], vCube[2]);
+    glNormal3fv(vNormal);
+    glVertex3fv(vCube[5]);
+    glVertex3fv(vCube[1]);
+    glVertex3fv(vCube[2]);
+    m3dFindNormal(vNormal, vCube[5], vCube[2], vCube[6]);
+    glNormal3fv(vNormal);
+    glVertex3fv(vCube[5]);
+    glVertex3fv(vCube[2]);
+    glVertex3fv(vCube[6]);
+
+    // Top face
+    m3dFindNormal(vNormal, vCube[3], vCube[7], vCube[6]);
+    glNormal3fv(vNormal);
+    glVertex3fv(vCube[3]);
+    glVertex3fv(vCube[7]);
+    glVertex3fv(vCube[6]);
+    m3dFindNormal(vNormal, vCube[3], vCube[6], vCube[2]);
+    glNormal3fv(vNormal);
+    glVertex3fv(vCube[3]);
+    glVertex3fv(vCube[6]);
+    glVertex3fv(vCube[2]);
+
+    // Bottom face
+    m3dFindNormal(vNormal, vCube[4], vCube[0], vCube[1]);
+    glNormal3fv(vNormal);
+    glVertex3fv(vCube[4]);
+    glVertex3fv(vCube[0]);
+    glVertex3fv(vCube[1]);
+    m3dFindNormal(vNormal, vCube[4], vCube[1], vCube[5]);
+    glNormal3fv(vNormal);
+    glVertex3fv(vCube[4]);
+    glVertex3fv(vCube[1]);
+    glVertex3fv(vCube[5]);
+  }
+}
 ////////////////////////////////////////////////
 // This function just specifically draws the jet
 void DrawJet(int nShadow)
@@ -69,6 +169,12 @@ void DrawJet(int nShadow)
 
   // Nose Cone - Points straight down
   // Set material color
+  glPushMatrix();
+  glTranslatef(0, 80, 0);
+
+  glRotatef(xRot, 1.0f, 0.0f, 0.0f);
+  glRotatef(yRot, 0.0f, 1.0f, 0.0f);
+
   glBegin(GL_TRIANGLES);
   glNormal3f(0.0f, -1.0f, 0.0f);
   glNormal3f(0.0f, -1.0f, 0.0f);
@@ -263,6 +369,100 @@ void DrawJet(int nShadow)
   }
 
   glEnd();
+  glPopMatrix();
+
+  float x = 0, y = 0, z = 0;
+  float rotX = 0, rotY = 0, rotZ = 0;
+  //
+  // Create the robot body
+  // glPushMatrix();
+  // glTranslatef(0, 0, 0);
+  // glRotatef(rotX, 1.0f, 0.0f, 0.0f);
+  // glRotatef(rotY, 0.0f, 1.0f, 0.0f);
+  // glRotatef(rotZ, 0.0f, 0.0f, 1.0f);
+  // glBegin(GL_TRIANGLES);
+  // cube();
+  // glEnd();
+  // glPopMatrix();
+
+  glPushMatrix();
+
+  // Apply transformations for the whole robot
+  glTranslatef(0, 0, 0);
+  glRotatef(xRot, 1.0f, 0.0f, 0.0f);
+
+  // body
+  glPushMatrix();
+  glTranslatef(0, 0, 0);
+  glScalef(2, 4, 1);
+  // glRotatef(rotX, 1.0f, 0.0f, 0.0f);
+  // glRotatef(rotY, 0.0f, 1.0f, 0.0f);
+  // glRotatef(rotZ, 0.0f, 0.0f, 1.0f);
+  glBegin(GL_TRIANGLES);
+  cube();
+  glEnd();
+  glPopMatrix();
+
+  // head
+  glPushMatrix();
+  glTranslatef(0, 40, 0);
+  glScalef(2, 1, 1);
+  // glRotatef(rotX, 1.0f, 0.0f, 0.0f);
+  // glRotatef(rotY, 0.0f, 1.0f, 0.0f);
+  // glRotatef(rotZ, 0.0f, 0.0f, 1.0f);
+  glBegin(GL_TRIANGLES);
+  cube();
+  glEnd();
+  glPopMatrix();
+
+  // left arm
+  glPushMatrix();
+  glRotatef(yRot, 1.0f, 0.0f, 0.0f);
+
+  glTranslatef(23, 10, 0);
+  glScalef(0.7, 2, 1);
+
+  glBegin(GL_TRIANGLES);
+  cube();
+  glEnd();
+
+  glPopMatrix();
+
+  // right arm
+  glPushMatrix();
+  glRotatef(yRot, 1.0f, 0.0f, 0.0f);
+
+  glTranslatef(-23, 10, 0);
+  glScalef(0.7, 2, 1);
+
+  glBegin(GL_TRIANGLES);
+  cube();
+  glEnd();
+  glPopMatrix();
+
+  // left leg
+  glPushMatrix();
+  glTranslatef(10, -40, 0);
+  glScalef(0.7, 2, 1);
+
+  glBegin(GL_TRIANGLES);
+  cube();
+  glEnd();
+  glPopMatrix();
+
+  // right leg
+  glPushMatrix();
+  glTranslatef(-10, -40, 0);
+  glScalef(0.7, 2, 1);
+  // glRotatef(rotX, 1.0f, 0.0f, 0.0f);
+  // glRotatef(rotY, 0.0f, 1.0f, 0.0f);
+  // glRotatef(rotZ, 0.0f, 0.0f, 1.0f);
+  glBegin(GL_TRIANGLES);
+  cube();
+  glEnd();
+  glPopMatrix();
+
+  glPopMatrix();
 }
 
 // Called to draw scene
@@ -289,8 +489,6 @@ void RenderScene(void)
   // before rotating the jet
   glEnable(GL_LIGHTING);
   glLightfv(GL_LIGHT0, GL_POSITION, lightPos[lightId]);
-  glRotatef(xRot, 1.0f, 0.0f, 0.0f);
-  glRotatef(yRot, 0.0f, 1.0f, 0.0f);
 
   DrawJet(0);
 
@@ -306,9 +504,9 @@ void RenderScene(void)
   // Multiply by shadow projection matrix
   glMultMatrixf((GLfloat *)shadowMat);
 
-  // Now rotate the jet around in the new flattend space
-  glRotatef(xRot, 1.0f, 0.0f, 0.0f);
-  glRotatef(yRot, 0.0f, 1.0f, 0.0f);
+  // // Now rotate the jet around in the new flattend space
+  // glRotatef(xRot, 1.0f, 0.0f, 0.0f);
+  // glRotatef(yRot, 0.0f, 1.0f, 0.0f);
 
   // Pass true to indicate drawing shadow
   DrawJet(1);
@@ -319,7 +517,7 @@ void RenderScene(void)
   // Draw the light source
   glPushMatrix();
   glTranslatef(lightPos[lightId][0], lightPos[lightId][1], lightPos[lightId][2]);
-  glColor3ub(255, 255, 0);
+  glColor3ub(255, 0, 0);
   glutSolidSphere(5.0f, 10, 10);
   glPopMatrix();
 
