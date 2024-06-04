@@ -40,10 +40,14 @@ static GLfloat yRot = 0.0f;
 
 // These values need to be available globally
 // Light values and coordinates
+int lightId = 0;
 GLfloat ambientLight[] = {0.3f, 0.3f, 0.3f, 1.0f};
 GLfloat diffuseLight[] = {0.7f, 0.7f, 0.7f, 1.0f};
 GLfloat specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
-GLfloat lightPos[] = {-75.0f, 150.0f, -50.0f, 0.0f};
+GLfloat lightPos[4][4] = {{-75.0f, 200.0f, -50.0f, 0.0f},
+                          {-75.0f, 150.0f, -50.0f, 0.0f},
+                          {-75.0f, 100.0f, -50.0f, 0.0f},
+                          {-75.0f, 50.0f, -50.0f, 0.0f}};
 GLfloat specref[] = {1.0f, 1.0f, 1.0f, 1.0f};
 
 // Transformation matrix to project shadow
@@ -59,9 +63,9 @@ void DrawJet(int nShadow)
   // Set material color, note we only have to set to black
   // for the shadow once
   if (nShadow == 0)
-    glColor3ub(128, 128, 128);
+    glColor3ub(255, 0, 0);
   else
-    glColor3ub(0, 0, 0);
+    glColor3ub(100, 0, 0);
 
   // Nose Cone - Points straight down
   // Set material color
@@ -284,7 +288,7 @@ void RenderScene(void)
   // Draw jet at new orientation, put light in correct position
   // before rotating the jet
   glEnable(GL_LIGHTING);
-  glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
+  glLightfv(GL_LIGHT0, GL_POSITION, lightPos[lightId]);
   glRotatef(xRot, 1.0f, 0.0f, 0.0f);
   glRotatef(yRot, 0.0f, 1.0f, 0.0f);
 
@@ -314,7 +318,7 @@ void RenderScene(void)
 
   // Draw the light source
   glPushMatrix();
-  glTranslatef(lightPos[0], lightPos[1], lightPos[2]);
+  glTranslatef(lightPos[lightId][0], lightPos[lightId][1], lightPos[lightId][2]);
   glColor3ub(255, 255, 0);
   glutSolidSphere(5.0f, 10, 10);
   glPopMatrix();
@@ -343,7 +347,7 @@ void SetupRC()
   glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
   glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLight);
   glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
-  glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
+  glLightfv(GL_LIGHT0, GL_POSITION, lightPos[lightId]);
   glEnable(GL_LIGHT0);
 
   // Enable color tracking
@@ -365,7 +369,7 @@ void SetupRC()
   m3dGetPlaneEquation(vPlaneEquation, points[0], points[1], points[2]);
 
   // Calculate projection matrix to draw shadow on the ground
-  m3dMakePlanarShadowMatrix(shadowMat, vPlaneEquation, lightPos);
+  m3dMakePlanarShadowMatrix(shadowMat, vPlaneEquation, lightPos[lightId]);
 
   glEnable(GL_NORMALIZE);
 }
@@ -399,7 +403,20 @@ void SpecialKeys(int key, int x, int y)
   // Refresh the Window
   glutPostRedisplay();
 }
-
+void NormalKeyHandler(unsigned char key, int x, int y)
+{
+  if (key == '1')
+    lightId = 0;
+  if (key == '2')
+    lightId = 1;
+  if (key == '3')
+    lightId = 2;
+  if (key == '4')
+    lightId = 3;
+  printf("lightId: %d\n", lightId);
+  SetupRC();
+  glutPostRedisplay();
+}
 void ChangeSize(int w, int h)
 {
   GLfloat fAspect;
@@ -423,7 +440,7 @@ void ChangeSize(int w, int h)
 
   // Move out Z axis so we can see everything
   glTranslatef(0.0f, 0.0f, -400.0f);
-  glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
+  glLightfv(GL_LIGHT0, GL_POSITION, lightPos[lightId]);
 }
 
 int main(int argc, char *argv[])
@@ -434,6 +451,7 @@ int main(int argc, char *argv[])
   glutCreateWindow("Shadow");
   glutReshapeFunc(ChangeSize);
   glutSpecialFunc(SpecialKeys);
+  glutKeyboardFunc(NormalKeyHandler);
   glutDisplayFunc(RenderScene);
   SetupRC();
   glutMainLoop();
