@@ -18,9 +18,9 @@ set(SRC_FILES)
 set(INCLUDE_FILES
     ${INCLUDE_DIR}/obj.hpp
     ${INCLUDE_DIR}/matrix.hpp
+    thirdparty/GLTools/src/math3d.cpp
 )
-set(SRC_FILES
-)
+set(SRC_FILES)
 
 
 add_executable(${PROJECT_NAME}
@@ -28,7 +28,18 @@ add_executable(${PROJECT_NAME}
     ${INCLUDE_FILES}
     ${SRC_FILES}
 )
+# Specify the directory containing GLTools headers
+include_directories(thirdparty/GLTools/include)
+# Add the GLTools source files
+add_library(GLTools STATIC thirdparty/GLTools/src/GLTools.cpp)
+# Link GLTools to your executable
+target_link_libraries(${PROJECT_NAME} GLTools)
+
 target_link_libraries(${PROJECT_NAME} ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY})
 target_link_libraries(${PROJECT_NAME} freeglut_static)
 target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/thirdparty/freeglut/include/GL)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/include)
+
+
+
+
