@@ -1,9 +1,6 @@
 #include <math.h>
-struct Vector2d
-{
-    float x = 0.0;
-    float y = 0.0;
-};
+#include "obj.hpp"
+
 float clamp(float x, float a, float b)
 {
     return x < a ? a : (x > b ? b : x);

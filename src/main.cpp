@@ -26,132 +26,119 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-// Shadow.cpp
-// OpenGL SuperBible
-// Demonstrates simple planar shadows
-// Program by Richard S. Wright Jr.
-
-// #include "../../shared/gltools.h"
-// #include "../../shared/math3d.h"
-
 // Rotation amounts
 static GLfloat xRot = 0.0f;
-static GLfloat yRot = 0.0f;
+static GLfloat yRot = 1.57f;
 
+int windowx = 1920 / 2;
+int windowy = 1080 - 40;
+
+float mousex = 0;
+float mousey = 0;
 // These values need to be available globally
 // Light values and coordinates
 int lightId = 0;
 GLfloat ambientLight[] = {0.3f, 0.3f, 0.3f, 1.0f};
 GLfloat diffuseLight[] = {0.7f, 0.7f, 0.7f, 1.0f};
 GLfloat specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
-GLfloat lightPos[4][4] = {{-75.0f, 200.0f, -50.0f, 0.0f},
-                          {-75.0f, 150.0f, -50.0f, 0.0f},
-                          {-75.0f, 100.0f, -50.0f, 0.0f},
-                          {-75.0f, 50.0f, -50.0f, 0.0f}};
+GLfloat lightPos[4][4] = {
+    {-75.0f, 50.0f, 50.0f, 0.0f},
+    {-75.0f, 100.0f, 50.0f, 0.0f},
+    {-75.0f, 150.0f, 50.0f, 0.0f},
+    {-75.0f, 200.0f, 50.0f, 0.0f},
+};
 GLfloat specref[] = {1.0f, 1.0f, 1.0f, 1.0f};
+GLuint textures[4];
 
-// Transformation matrix to project shadow
+Obj obj1;
+Obj obj2;
+Obj obj3;
+
+float r = 0;
+
 M3DMatrix44f shadowMat;
 
-void cube()
+int update_time = 10;
+void Timer(int value)
 {
-  {
-    // Define the vertices for the cube
-    // M3DVector3f vCube[8] = {
-    //     {0.0f, 0.0f, 0.0f},    // 0 Bottom back left
-    //     {15.0f, 0.0f, 0.0f},   // 1 Bottom back right
-    //     {15.0f, 15.0f, 0.0f},  // 2 Top back right
-    //     {0.0f, 15.0f, 0.0f},   // 3 Top back left
-    //     {0.0f, 0.0f, 15.0f},   // 4 Bottom front left
-    //     {15.0f, 0.0f, 15.0f},  // 5 Bottom front right
-    //     {15.0f, 15.0f, 15.0f}, // 6 Top front right
-    //     {0.0f, 15.0f, 15.0f}   // 7 Top front left
-    // };
-    M3DVector3f vCube[8] = {
-        {-7.5f, -7.5f, -7.5f}, // 0 Bottom back left
-        {7.5f, -7.5f, -7.5f},  // 1 Bottom back right
-        {7.5f, 7.5f, -7.5f},   // 2 Top back right
-        {-7.5f, 7.5f, -7.5f},  // 3 Top back left
-        {-7.5f, -7.5f, 7.5f},  // 4 Bottom front left
-        {7.5f, -7.5f, 7.5f},   // 5 Bottom front right
-        {7.5f, 7.5f, 7.5f},    // 6 Top front right
-        {-7.5f, 7.5f, 7.5f}    // 7 Top front left
-    };
+  // RenderScene();
+  glutPostRedisplay(); // Post re-paint request to activate display()
 
-    M3DVector3f vNormal;
+  r += 2;
+  glutTimerFunc(update_time, Timer, 0); // next Timer call milliseconds later
+}
+void MouseHandler(int button, int state, int x, int y)
+{
+
+  if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+  {
+    mousex = ((float)x / (float)windowx) * 2 - 1;
+    mousey = -2 * ((float)y / (float)windowy) + 1;
+  }
+  if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
+  {
+    mousex = ((float)x / (float)windowx) * 2 - 1;
+    mousey = -2 * ((float)y / (float)windowy) + 1;
+  }
+  printf("mouse x=%.2f,y=%.2f\n", mousex, mousey);
+  // xRot = mousex * 3.14;
+  // yRot = mousey * 3.14;
+}
+void renderObj(Obj &obj)
+{
+  M3DVector3f vNormal;
+  glBegin(GL_TRIANGLES);
+  for (auto i = 0; i < obj.faces.size(); i++)
+  {
+
+    FaceIndices face = obj.faces[i];
+    float v1[3] = {obj.vertices[face.v[0]].x, obj.vertices[face.v[0]].y, obj.vertices[face.v[0]].z};
+    float v2[3] = {obj.vertices[face.v[1]].x, obj.vertices[face.v[1]].y, obj.vertices[face.v[1]].z};
+    float v3[3] = {obj.vertices[face.v[2]].x, obj.vertices[face.v[2]].y, obj.vertices[face.v[2]].z};
+
+    float uv1[2] = {obj.uvs[face.uv[0]].x, 1 - obj.uvs[face.uv[0]].y};
+    float uv2[2] = {obj.uvs[face.uv[1]].x, 1 - obj.uvs[face.uv[1]].y};
+    float uv3[2] = {obj.uvs[face.uv[2]].x, 1 - obj.uvs[face.uv[2]].y};
 
     // Front face
-    m3dFindNormal(vNormal, vCube[4], vCube[5], vCube[6]);
+    m3dFindNormal(vNormal, v1, v2, v3);
     glNormal3fv(vNormal);
-    glVertex3fv(vCube[4]);
-    glVertex3fv(vCube[5]);
-    glVertex3fv(vCube[6]);
-    m3dFindNormal(vNormal, vCube[4], vCube[6], vCube[7]);
-    glNormal3fv(vNormal);
-    glVertex3fv(vCube[4]);
-    glVertex3fv(vCube[6]);
-    glVertex3fv(vCube[7]);
 
-    // Back face
-    m3dFindNormal(vNormal, vCube[1], vCube[0], vCube[3]);
-    glNormal3fv(vNormal);
-    glVertex3fv(vCube[1]);
-    glVertex3fv(vCube[0]);
-    glVertex3fv(vCube[3]);
-    m3dFindNormal(vNormal, vCube[1], vCube[3], vCube[2]);
-    glNormal3fv(vNormal);
-    glVertex3fv(vCube[1]);
-    glVertex3fv(vCube[3]);
-    glVertex3fv(vCube[2]);
-
-    // Left face
-    m3dFindNormal(vNormal, vCube[0], vCube[4], vCube[7]);
-    glNormal3fv(vNormal);
-    glVertex3fv(vCube[0]);
-    glVertex3fv(vCube[4]);
-    glVertex3fv(vCube[7]);
-    m3dFindNormal(vNormal, vCube[0], vCube[7], vCube[3]);
-    glNormal3fv(vNormal);
-    glVertex3fv(vCube[0]);
-    glVertex3fv(vCube[7]);
-    glVertex3fv(vCube[3]);
-
-    // Right face
-    m3dFindNormal(vNormal, vCube[5], vCube[1], vCube[2]);
-    glNormal3fv(vNormal);
-    glVertex3fv(vCube[5]);
-    glVertex3fv(vCube[1]);
-    glVertex3fv(vCube[2]);
-    m3dFindNormal(vNormal, vCube[5], vCube[2], vCube[6]);
-    glNormal3fv(vNormal);
-    glVertex3fv(vCube[5]);
-    glVertex3fv(vCube[2]);
-    glVertex3fv(vCube[6]);
-
-    // Top face
-    m3dFindNormal(vNormal, vCube[3], vCube[7], vCube[6]);
-    glNormal3fv(vNormal);
-    glVertex3fv(vCube[3]);
-    glVertex3fv(vCube[7]);
-    glVertex3fv(vCube[6]);
-    m3dFindNormal(vNormal, vCube[3], vCube[6], vCube[2]);
-    glNormal3fv(vNormal);
-    glVertex3fv(vCube[3]);
-    glVertex3fv(vCube[6]);
-    glVertex3fv(vCube[2]);
-
-    // Bottom face
-    m3dFindNormal(vNormal, vCube[4], vCube[0], vCube[1]);
-    glNormal3fv(vNormal);
-    glVertex3fv(vCube[4]);
-    glVertex3fv(vCube[0]);
-    glVertex3fv(vCube[1]);
-    m3dFindNormal(vNormal, vCube[4], vCube[1], vCube[5]);
-    glNormal3fv(vNormal);
-    glVertex3fv(vCube[4]);
-    glVertex3fv(vCube[1]);
-    glVertex3fv(vCube[5]);
+    glTexCoord2fv(uv1);
+    glVertex3fv(v1);
+    glTexCoord2fv(uv2);
+    glVertex3fv(v2);
+    glTexCoord2fv(uv3);
+    glVertex3fv(v3);
   }
+  glEnd();
+}
+void load_image(GLuint *textures, const char *path)
+{
+  int width, height, channels;
+  unsigned char *imageData = stbi_load(path, &width, &height, &channels, 0);
+
+  glGenTextures(1, textures);
+  glBindTexture(GL_TEXTURE_2D, *textures);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  if (imageData)
+  {
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
+                 width, height,
+                 0, GL_RGB, GL_UNSIGNED_BYTE, imageData);
+    stbi_image_free(imageData);
+    printf("success\n");
+  }
+  else
+  {
+    printf("nmsl\n");
+  }
+
+  glEnable(GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_2D, *textures);
 }
 ////////////////////////////////////////////////
 // This function just specifically draws the jet
@@ -159,387 +146,92 @@ void DrawJet(int nShadow)
 {
   M3DVector3f vNormal; // Storeage for calculated surface normal
 
-  // Nose Cone /////////////////////////////
-  // Set material color, note we only have to set to black
-  // for the shadow once
-  if (nShadow == 0)
-    glColor3ub(255, 0, 0);
-  else
-    glColor3ub(100, 0, 0);
+  float scale = 0.2;
+  // printf("r=%.2f\n", r);
 
-  // Nose Cone - Points straight down
-  // Set material color
+  // glTranslatef(0.0f, 10.0f, 0.0f);
   glPushMatrix();
-  glTranslatef(0, 80, 0);
 
-  glRotatef(xRot, 1.0f, 0.0f, 0.0f);
-  glRotatef(yRot, 0.0f, 1.0f, 0.0f);
-
-  glBegin(GL_TRIANGLES);
-  glNormal3f(0.0f, -1.0f, 0.0f);
-  glNormal3f(0.0f, -1.0f, 0.0f);
-  glVertex3f(0.0f, 0.0f, 60.0f);
-  glVertex3f(-15.0f, 0.0f, 30.0f);
-  glVertex3f(15.0f, 0.0f, 30.0f);
-
-  // Verticies for this panel
+  glPushMatrix();
+  glScaled(scale, scale, scale);
+  glTranslatef(0.0f, -10.0 * scale, 3.0f);
+  glRotatef(r, 0, 1, 0);
+  if (nShadow == 0)
   {
-    M3DVector3f vPoints[3] = {{15.0f, 0.0f, 30.0f},
-                              {0.0f, 15.0f, 30.0f},
-                              {0.0f, 0.0f, 60.0f}};
-
-    // Calculate the normal for the plane
-    m3dFindNormal(vNormal, vPoints[0], vPoints[1], vPoints[2]);
-    glNormal3fv(vNormal);
-    glVertex3fv(vPoints[0]);
-    glVertex3fv(vPoints[1]);
-    glVertex3fv(vPoints[2]);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textures[1]);
+    glColor3ub(255, 255, 255);
   }
-
+  else
   {
-    M3DVector3f vPoints[3] = {{0.0f, 0.0f, 60.0f},
-                              {0.0f, 15.0f, 30.0f},
-                              {-15.0f, 0.0f, 30.0f}};
-
-    m3dFindNormal(vNormal, vPoints[0], vPoints[1], vPoints[2]);
-    glNormal3fv(vNormal);
-    glVertex3fv(vPoints[0]);
-    glVertex3fv(vPoints[1]);
-    glVertex3fv(vPoints[2]);
+    glDisable(GL_TEXTURE_2D);
+    glColor3ub(10, 10, 40);
   }
+  renderObj(obj2);
 
-  // Body of the Plane ////////////////////////
-  {
-    M3DVector3f vPoints[3] = {{-15.0f, 0.0f, 30.0f},
-                              {0.0f, 15.0f, 30.0f},
-                              {0.0f, 0.0f, -56.0f}};
-
-    m3dFindNormal(vNormal, vPoints[0], vPoints[1], vPoints[2]);
-    glNormal3fv(vNormal);
-    glVertex3fv(vPoints[0]);
-    glVertex3fv(vPoints[1]);
-    glVertex3fv(vPoints[2]);
-  }
-
-  {
-    M3DVector3f vPoints[3] = {{0.0f, 0.0f, -56.0f},
-                              {0.0f, 15.0f, 30.0f},
-                              {15.0f, 0.0f, 30.0f}};
-
-    m3dFindNormal(vNormal, vPoints[0], vPoints[1], vPoints[2]);
-    glNormal3fv(vNormal);
-    glVertex3fv(vPoints[0]);
-    glVertex3fv(vPoints[1]);
-    glVertex3fv(vPoints[2]);
-  }
-
-  glNormal3f(0.0f, -1.0f, 0.0f);
-  glVertex3f(15.0f, 0.0f, 30.0f);
-  glVertex3f(-15.0f, 0.0f, 30.0f);
-  glVertex3f(0.0f, 0.0f, -56.0f);
-
-  ///////////////////////////////////////////////
-  // Left wing
-  // Large triangle for bottom of wing
-  {
-    M3DVector3f vPoints[3] = {{0.0f, 2.0f, 27.0f},
-                              {-60.0f, 2.0f, -8.0f},
-                              {60.0f, 2.0f, -8.0f}};
-
-    m3dFindNormal(vNormal, vPoints[0], vPoints[1], vPoints[2]);
-    glNormal3fv(vNormal);
-    glVertex3fv(vPoints[0]);
-    glVertex3fv(vPoints[1]);
-    glVertex3fv(vPoints[2]);
-  }
-
-  {
-    M3DVector3f vPoints[3] = {{60.0f, 2.0f, -8.0f},
-                              {0.0f, 7.0f, -8.0f},
-                              {0.0f, 2.0f, 27.0f}};
-
-    m3dFindNormal(vNormal, vPoints[0], vPoints[1], vPoints[2]);
-    glNormal3fv(vNormal);
-    glVertex3fv(vPoints[0]);
-    glVertex3fv(vPoints[1]);
-    glVertex3fv(vPoints[2]);
-  }
-
-  {
-    M3DVector3f vPoints[3] = {{60.0f, 2.0f, -8.0f},
-                              {-60.0f, 2.0f, -8.0f},
-                              {0.0f, 7.0f, -8.0f}};
-
-    m3dFindNormal(vNormal, vPoints[0], vPoints[1], vPoints[2]);
-    glNormal3fv(vNormal);
-    glVertex3fv(vPoints[0]);
-    glVertex3fv(vPoints[1]);
-    glVertex3fv(vPoints[2]);
-  }
-
-  {
-    M3DVector3f vPoints[3] = {{0.0f, 2.0f, 27.0f},
-                              {0.0f, 7.0f, -8.0f},
-                              {-60.0f, 2.0f, -8.0f}};
-
-    m3dFindNormal(vNormal, vPoints[0], vPoints[1], vPoints[2]);
-    glNormal3fv(vNormal);
-    glVertex3fv(vPoints[0]);
-    glVertex3fv(vPoints[1]);
-    glVertex3fv(vPoints[2]);
-  }
-
-  // Tail section///////////////////////////////
-  // Bottom of back fin
-  glNormal3f(0.0f, -1.0f, 0.0f);
-  glVertex3f(-30.0f, -0.50f, -57.0f);
-  glVertex3f(30.0f, -0.50f, -57.0f);
-  glVertex3f(0.0f, -0.50f, -40.0f);
-
-  {
-    M3DVector3f vPoints[3] = {{0.0f, -0.5f, -40.0f},
-                              {30.0f, -0.5f, -57.0f},
-                              {0.0f, 4.0f, -57.0f}};
-
-    m3dFindNormal(vNormal, vPoints[0], vPoints[1], vPoints[2]);
-    glNormal3fv(vNormal);
-    glVertex3fv(vPoints[0]);
-    glVertex3fv(vPoints[1]);
-    glVertex3fv(vPoints[2]);
-  }
-
-  {
-    M3DVector3f vPoints[3] = {{0.0f, 4.0f, -57.0f},
-                              {-30.0f, -0.5f, -57.0f},
-                              {0.0f, -0.5f, -40.0f}};
-
-    m3dFindNormal(vNormal, vPoints[0], vPoints[1], vPoints[2]);
-    glNormal3fv(vNormal);
-    glVertex3fv(vPoints[0]);
-    glVertex3fv(vPoints[1]);
-    glVertex3fv(vPoints[2]);
-  }
-
-  {
-    M3DVector3f vPoints[3] = {{30.0f, -0.5f, -57.0f},
-                              {-30.0f, -0.5f, -57.0f},
-                              {0.0f, 4.0f, -57.0f}};
-
-    m3dFindNormal(vNormal, vPoints[0], vPoints[1], vPoints[2]);
-    glNormal3fv(vNormal);
-    glVertex3fv(vPoints[0]);
-    glVertex3fv(vPoints[1]);
-    glVertex3fv(vPoints[2]);
-  }
-
-  {
-    M3DVector3f vPoints[3] = {{0.0f, 0.5f, -40.0f},
-                              {3.0f, 0.5f, -57.0f},
-                              {0.0f, 25.0f, -65.0f}};
-
-    m3dFindNormal(vNormal, vPoints[0], vPoints[1], vPoints[2]);
-    glNormal3fv(vNormal);
-    glVertex3fv(vPoints[0]);
-    glVertex3fv(vPoints[1]);
-    glVertex3fv(vPoints[2]);
-  }
-
-  {
-    M3DVector3f vPoints[3] = {{0.0f, 25.0f, -65.0f},
-                              {-3.0f, 0.5f, -57.0f},
-                              {0.0f, 0.5f, -40.0f}};
-
-    m3dFindNormal(vNormal, vPoints[0], vPoints[1], vPoints[2]);
-    glNormal3fv(vNormal);
-    glVertex3fv(vPoints[0]);
-    glVertex3fv(vPoints[1]);
-    glVertex3fv(vPoints[2]);
-  }
-
-  {
-    M3DVector3f vPoints[3] = {{3.0f, 0.5f, -57.0f},
-                              {-3.0f, 0.5f, -57.0f},
-                              {0.0f, 25.0f, -65.0f}};
-
-    m3dFindNormal(vNormal, vPoints[0], vPoints[1], vPoints[2]);
-    glNormal3fv(vNormal);
-    glVertex3fv(vPoints[0]);
-    glVertex3fv(vPoints[1]);
-    glVertex3fv(vPoints[2]);
-  }
-
-  glEnd();
-  glPopMatrix();
-
-  float x = 0, y = 0, z = 0;
-  float rotX = 0, rotY = 0, rotZ = 0;
-  //
-  // Create the robot body
-  // glPushMatrix();
-  // glTranslatef(0, 0, 0);
-  // glRotatef(rotX, 1.0f, 0.0f, 0.0f);
-  // glRotatef(rotY, 0.0f, 1.0f, 0.0f);
-  // glRotatef(rotZ, 0.0f, 0.0f, 1.0f);
-  // glBegin(GL_TRIANGLES);
-  // cube();
-  // glEnd();
   // glPopMatrix();
 
   glPushMatrix();
 
-  // Apply transformations for the whole robot
-  glTranslatef(0, 0, 0);
-  glRotatef(xRot, 1.0f, 0.0f, 0.0f);
+  // glScaled(scale, scale, scale);
+  glTranslatef(0.0f, 0.0f, 1.0f);
+  glRotatef(r, 0, 1, 0);
 
-  // body
-  glPushMatrix();
-  glTranslatef(0, 0, 0);
-  glScalef(2, 4, 1);
-  // glRotatef(rotX, 1.0f, 0.0f, 0.0f);
-  // glRotatef(rotY, 0.0f, 1.0f, 0.0f);
-  // glRotatef(rotZ, 0.0f, 0.0f, 1.0f);
-  glBegin(GL_TRIANGLES);
-  cube();
-  glEnd();
-  glPopMatrix();
+  if (nShadow == 0)
+  {
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textures[2]);
+    glColor3ub(255, 255, 255);
+  }
+  else
+  {
+    glDisable(GL_TEXTURE_2D);
+    glColor3ub(10, 10, 40);
+  }
 
-  // head
-  glPushMatrix();
-  glTranslatef(0, 40, 0);
-  glScalef(2, 1, 1);
-  // glRotatef(rotX, 1.0f, 0.0f, 0.0f);
-  // glRotatef(rotY, 0.0f, 1.0f, 0.0f);
-  // glRotatef(rotZ, 0.0f, 0.0f, 1.0f);
-  glBegin(GL_TRIANGLES);
-  cube();
-  glEnd();
-  glPopMatrix();
-
-  // left arm
-  glPushMatrix();
-  glRotatef(yRot, 1.0f, 0.0f, 0.0f);
-
-  glTranslatef(23, 10, 0);
-  glScalef(0.7, 2, 1);
-
-  glBegin(GL_TRIANGLES);
-  cube();
-  glEnd();
-
-  glPopMatrix();
-
-  // right arm
-  glPushMatrix();
-  glRotatef(yRot, 1.0f, 0.0f, 0.0f);
-
-  glTranslatef(-23, 10, 0);
-  glScalef(0.7, 2, 1);
-
-  glBegin(GL_TRIANGLES);
-  cube();
-  glEnd();
-  glPopMatrix();
-
-  // left leg
-  glPushMatrix();
-  glTranslatef(10, -40, 0);
-  glScalef(0.7, 2, 1);
-
-  glBegin(GL_TRIANGLES);
-  cube();
-  glEnd();
-  glPopMatrix();
-
-  // right leg
-  glPushMatrix();
-  glTranslatef(-10, -40, 0);
-  glScalef(0.7, 2, 1);
-  // glRotatef(rotX, 1.0f, 0.0f, 0.0f);
-  // glRotatef(rotY, 0.0f, 1.0f, 0.0f);
-  // glRotatef(rotZ, 0.0f, 0.0f, 1.0f);
-  glBegin(GL_TRIANGLES);
-  cube();
-  glEnd();
+  renderObj(obj3);
   glPopMatrix();
 
   glPopMatrix();
-}
-
-// Called to draw scene
-void RenderScene(void)
-{
-  // Clear the window with current clearing color
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-  // Draw the ground, we do manual shading to a darker green
-  // in the background to give the illusion of depth
-  glBegin(GL_QUADS);
-  glColor3ub(0, 32, 0); // light green ground
-  glVertex3f(400.0f, -150.0f, -200.0f);
-  glVertex3f(-400.0f, -150.0f, -200.0f);
-  glColor3ub(0, 255, 0); // make it in green gradient
-  glVertex3f(-400.0f, -150.0f, 200.0f);
-  glVertex3f(400.0f, -150.0f, 200.0f);
-  glEnd();
-
-  // Save the matrix state and do the rotations
-  glPushMatrix();
-
-  // Draw jet at new orientation, put light in correct position
-  // before rotating the jet
-  glEnable(GL_LIGHTING);
-  glLightfv(GL_LIGHT0, GL_POSITION, lightPos[lightId]);
-
-  DrawJet(0);
-
-  // Restore original matrix state
-  glPopMatrix();
-
-  // Get ready to draw the shadow and the ground
-  // First disable lighting and save the projection state
-  glDisable(GL_DEPTH_TEST);
-  glDisable(GL_LIGHTING);
-  glPushMatrix();
-
-  // Multiply by shadow projection matrix
-  glMultMatrixf((GLfloat *)shadowMat);
-
-  // // Now rotate the jet around in the new flattend space
-  // glRotatef(xRot, 1.0f, 0.0f, 0.0f);
-  // glRotatef(yRot, 0.0f, 1.0f, 0.0f);
-
-  // Pass true to indicate drawing shadow
-  DrawJet(1);
-
-  // Restore the projection to normal
-  glPopMatrix();
-
-  // Draw the light source
-  glPushMatrix();
-  glTranslatef(lightPos[lightId][0], lightPos[lightId][1], lightPos[lightId][2]);
-  glColor3ub(255, 0, 0);
-  glutSolidSphere(5.0f, 10, 10);
-  glPopMatrix();
-
-  // Restore lighting state variables
-  glEnable(GL_DEPTH_TEST);
-
-  // Display the results
-  glutSwapBuffers();
 }
 
 // This function does any needed initialization on the rendering
 // context.
 void SetupRC()
 {
+  GLfloat fAspect;
+
+  glViewport(0, 0, windowx, windowy);
+
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+
+  fAspect = (GLfloat)windowx / (GLfloat)windowy;
+  gluPerspective(120.0f, fAspect, 0.1, 15000.0);
+  float length = 100.0f;
+  gluLookAt(0.0f, 0.0f, 0.0f,
+            length * cos(yRot), length * sin(xRot), length * sin(yRot),
+            0.0f, 1.0f, 0.0f);
+  // gluLookAt(0.0f, 100.0f, -400.0f,
+  //           length * cos(yRot), length * cos(xRot), length * sin(yRot),
+  //           0.0f, 1.0f, 0.0f);
+
+  // glRotatef(xRot, 0, 1, 0);
+  // glRotatef(yRot, 1, 0, 0);
+  // glTranslatef(0.0f, 10.0f, 0.0f);
+
+  // Move out Z axis so we can see everything
+
+  glLightfv(GL_LIGHT0, GL_POSITION, lightPos[lightId]);
+
   // Any three points on the ground (counter clockwise order)
-  M3DVector3f points[3] = {{-30.0f, -149.0f, -20.0f},
-                           {-30.0f, -149.0f, 20.0f},
-                           {40.0f, -149.0f, 20.0f}};
+  M3DVector3f points[3] = {{-30.0f, -1.0f, -20.0f},
+                           {-30.0f, -1.0f, 20.0f},
+                           {40.0f, -1.0f, 20.0f}};
 
   glEnable(GL_DEPTH_TEST); // Hidden surface removal
   glFrontFace(GL_CCW);     // Counter clock-wise polygons face out
-  glEnable(GL_CULL_FACE);  // Do not calculate inside of jet
+  // glEnable(GL_CULL_FACE);  // Do not calculate inside of jet
 
   // Setup and enable light 0
   glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
@@ -571,34 +263,85 @@ void SetupRC()
 
   glEnable(GL_NORMALIZE);
 }
+// Called to draw scene
+void RenderScene(void)
+{
+  SetupRC();
+  // Clear the window with current clearing color
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  glDisable(GL_CULL_FACE);
+  glEnable(GL_TEXTURE_2D);
+  glEnable(GL_DEPTH_TEST);
+
+  // Draw the ground, we do manual shading to a darker green
+  // in the background to give the illusion of depth
+  // glPushMatrix();
+  // glBegin(GL_QUADS);
+  // glColor3ub(0, 32, 0); // light green ground
+  // glVertex3f(400.0f, -200.0f, -400.0f);
+  // glVertex3f(-400.0f, -200.0f, -400.0f);
+  // glColor3ub(0, 255, 0); // make it in green gradient
+  // glVertex3f(-400.0f, -200.0f, 400.0f);
+  // glVertex3f(400.0f, -200.0f, 400.0f);
+  // glEnd();
+  // glPopMatrix();
+
+  // Save the matrix state and do the rotations
+  glPushMatrix();
+
+  // Draw jet at new orientation, put light in correct position
+  // before rotating the jet
+  glEnable(GL_LIGHTING);
+  glLightfv(GL_LIGHT0, GL_POSITION, lightPos[lightId]);
+
+  float scale = 500;
+  glPushMatrix();
+  glColor3ub(255, 255, 255);
+  glScaled(scale, scale, scale);
+  glBindTexture(GL_TEXTURE_2D, textures[0]);
+  renderObj(obj1);
+  glPopMatrix();
+
+  DrawJet(0);
+
+  // Restore original matrix state
+  glPopMatrix();
+
+  // Get ready to draw the shadow and the ground
+  // First disable lighting and save the projection state
+  glDisable(GL_DEPTH_TEST);
+  glDisable(GL_LIGHTING);
+
+  glPushMatrix();
+  glMultMatrixf((GLfloat *)shadowMat);
+  DrawJet(1);
+  glPopMatrix();
+
+  // Draw the light source
+  glPushMatrix();
+  glTranslatef(lightPos[lightId][0], lightPos[lightId][1], lightPos[lightId][2]);
+  glColor3ub(255, 0, 255);
+  glutSolidSphere(10.0f, 10, 10);
+  glPopMatrix();
+
+  glutSwapBuffers();
+}
 
 void SpecialKeys(int key, int x, int y)
 {
   if (key == GLUT_KEY_UP)
-    xRot -= 5.0f;
+    xRot += 0.05f;
 
   if (key == GLUT_KEY_DOWN)
-    xRot += 5.0f;
+    xRot -= 0.05f;
 
   if (key == GLUT_KEY_LEFT)
-    yRot -= 5.0f;
+    yRot -= 0.05f;
 
   if (key == GLUT_KEY_RIGHT)
-    yRot += 5.0f;
+    yRot += 0.05f;
 
-  if (key > 356.0f)
-    xRot = 0.0f;
-
-  if (key < -1.0f)
-    xRot = 355.0f;
-
-  if (key > 356.0f)
-    yRot = 0.0f;
-
-  if (key < -1.0f)
-    yRot = 355.0f;
-
-  // Refresh the Window
   glutPostRedisplay();
 }
 void NormalKeyHandler(unsigned char key, int x, int y)
@@ -611,47 +354,38 @@ void NormalKeyHandler(unsigned char key, int x, int y)
     lightId = 2;
   if (key == '4')
     lightId = 3;
+
   printf("lightId: %d\n", lightId);
-  SetupRC();
+
   glutPostRedisplay();
 }
 void ChangeSize(int w, int h)
 {
-  GLfloat fAspect;
-
-  // Prevent a divide by zero
-  if (h == 0)
-    h = 1;
-
-  // Set Viewport to window dimensions
-  glViewport(0, 0, w, h);
-
-  // Reset coordinate system
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-
-  fAspect = (GLfloat)w / (GLfloat)h;
-  gluPerspective(60.0f, fAspect, 200.0, 500.0);
-
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-
-  // Move out Z axis so we can see everything
-  glTranslatef(0.0f, 0.0f, -400.0f);
-  glLightfv(GL_LIGHT0, GL_POSITION, lightPos[lightId]);
+  windowx = w;
+  windowy = h;
 }
 
 int main(int argc, char *argv[])
 {
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-  glutInitWindowSize(800, 600);
+  glutInitWindowSize(windowx, windowy);
   glutCreateWindow("Shadow");
+  obj1 = readObj("../obj/sphere.obj");
+  obj2 = readObj("../obj/girl.obj");
+  obj3 = readObj("../obj/monster.obj");
+  load_image(&textures[0], "../texture/balcony.png");
+  load_image(&textures[1], "../texture/girl.jpeg");
+  load_image(&textures[2], "../texture/monster.jpg");
+  // Front Face (before rotation)
   glutReshapeFunc(ChangeSize);
+  glutMouseFunc(MouseHandler);
   glutSpecialFunc(SpecialKeys);
   glutKeyboardFunc(NormalKeyHandler);
   glutDisplayFunc(RenderScene);
-  SetupRC();
+
+  // glutIdleFunc(Loop);
+  glutTimerFunc(0, Timer, 0);
   glutMainLoop();
 
   return 0;

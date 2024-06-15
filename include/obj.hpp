@@ -1,3 +1,5 @@
+#ifndef OBJ_HPP
+#define OBJ_HPP
 
 #include <sstream>
 #include <fstream>
@@ -11,11 +13,18 @@ struct Vector3d
     float y = 0.0;
     float z = 0.0;
 };
+struct Vector2d
+{
+    float x = 0.0;
+    float y = 0.0;
+};
 
 struct FaceIndices
 {
-    int v1, v2, v3;
+    int v[3] = {-1, -1, -1};
+    int uv[3] = {-1, -1, -1};
 };
+
 class BoundBox
 {
 public:
@@ -74,10 +83,19 @@ float generateRandomFloat(int seed)
     return dist(gen);
 }
 
-void readObj(const std::string &filename, std::vector<Vector3d> &vertices, std::vector<FaceIndices> &faces, BoundBox &box)
+struct Obj
+{
+    std::vector<Vector3d> vertices;
+    std::vector<FaceIndices> faces;
+    std::vector<Vector2d> uvs;
+    BoundBox box;
+};
+Obj readObj(const std::string &filename)
 {
     std::ifstream in(filename);
     std::string line;
+
+    Obj obj;
 
     while (std::getline(in, line))
     {
@@ -91,21 +109,49 @@ void readObj(const std::string &filename, std::vector<Vector3d> &vertices, std::
             iss >> vertex.x >> vertex.y >> vertex.z;
             // printf("x=%.2f,y=%.2f,z=%.2f\n", vertex.x, vertex.y, vertex.z);
 
-            box.push_point(vertex);
+            obj.box.push_point(vertex);
 
-            vertices.push_back(vertex);
+            obj.vertices.push_back(vertex);
         }
         else if (prefix == "f")
         {
             FaceIndices face;
-            iss >> face.v1 >> face.v2 >> face.v3;
+
+            for (int i = 0; i < 3; i++)
+            {
+                iss >> face.v[i];
+                face.v[i]--;
+                if (iss.peek() == '/')
+                {
+                    iss.ignore();
+                    iss >> face.uv[i];
+                    face.uv[i]--;
+                }
+                if (iss.peek() == '/')
+                {
+                    int temp;
+                    iss.ignore();
+                    iss >> temp;
+                }
+            }
+
             // printf("v1=%d,v2=%d,v3=%d\n", face.v1, face.v2, face.v3);
-            faces.push_back(face);
+
+            obj.faces.push_back(face);
+        }
+        else if (prefix == "vt")
+        {
+            Vector2d uv;
+            iss >> uv.x >> uv.y;
+            // printf("v1=%d,v2=%d,v3=%d\n", face.v1, face.v2, face.v3);
+            obj.uvs.push_back({uv.x, uv.y});
         }
         else
         {
             iss.ignore();
         }
     }
-    box.update_center();
+    obj.box.update_center();
+    return obj;
 }
+#endif
