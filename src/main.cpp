@@ -157,7 +157,7 @@ void SetupRC()
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
 
-  gluPerspective(120.0f, fAspect, 0.01, 100.0);
+  gluPerspective(120.0f, fAspect, 0.01, 200.0);
 
   float length = 100.0f;
   gluLookAt(0.0f, 0.0f, 0.0f,
@@ -227,7 +227,7 @@ void RenderScene(void)
   {
 
     // sphere
-    float scale = 100;
+    float scale = 200;
     glPushMatrix();
     {
       glColor4f(1, 1, 1, 1);

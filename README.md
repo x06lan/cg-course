@@ -9,6 +9,7 @@
 - camera control
 - animation control
 
+[video demo](https://youtu.be/BEttHvEoqHc?si=bI6D3clk08G7sc14)
 
 ![](https://imgur.com/JDM4Mvn.png)
 ![](https://imgur.com/2pWPjj2.png)
@@ -23,6 +24,11 @@
 ## require
 * [cmake](https://github.com/Kitware/CMake/releases/download/v3.29.2/cmake-3.29.2-windows-x86_64.msi)
 
+if you use ubuntu
+```
+sudo apt install cmake ninja-build libglu1-mesa-dev mesa-common-dev xorg-dev libglew-dev
+```
+
 <!-- ###  ubuntu
 
 * install [wsl](https://apps.microsoft.com/detail/9pdxgncfsczv?ocid=pdpshare&hl=en-us&gl=US)
@@ -36,14 +42,16 @@ sudo apt install cmake
 
 ## run
 **recommend use linux**
-### windows
+
+<!-- ### windows -->
 <!-- install `cmake tools` in your vscode -->
-```
+<!-- ```
 ./build/cg-course.exe
-```
+``` -->
 
 
 ### linux
+
 ```bash
 cmake -B build
 cmake --build build

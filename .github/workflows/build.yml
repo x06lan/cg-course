@@ -31,6 +31,11 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get -y install ${{ matrix.compiler.cc }} cmake ninja-build libglu1-mesa-dev mesa-common-dev xorg-dev libglew-dev
+      
+      # - if: matrix.os == 'windows-latest'
+      #   name: Installing Dependencies
+      #   run: |
+      #     choco install glew
 
       - name: Checkout Repository
         uses: actions/checkout@v3

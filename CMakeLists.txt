@@ -8,11 +8,8 @@ set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
 set(INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
 
 add_subdirectory(thirdparty/freeglut)
-# find_package(OpenGL REQUIRED)
+find_package(OpenGL REQUIRED)
 
-# this two line don't work new.
-set(INCLUDE_FILE)
-set(SRC_FILES)
 
 # you need pre-install OpenGL, GLU, please google
 set(INCLUDE_FILES
@@ -22,27 +19,26 @@ set(INCLUDE_FILES
 )
 set(SRC_FILES
     ${SRC_DIR}/main.cpp
-    thirdparty/GLTools/src/math3d.cpp
+    thirdparty/gltools/src/math3d.cpp
 )
-
-
 
 add_executable(${PROJECT_NAME}
     ${INCLUDE_FILES}
     ${SRC_FILES}
 )
-# Specify the directory containing GLTools headers
-include_directories(thirdparty/GLTools/include)
 # Add the GLTools source files
-add_library(GLTools STATIC thirdparty/GLTools/src/GLTools.cpp)
+add_library(GLTools STATIC thirdparty/gltools/src/GLTools.cpp)
+# Specify the directory containing GLTools headers
+target_include_directories(GLTools PRIVATE
+    ${CMAKE_SOURCE_DIR}/thirdparty/gltools/include
+)
 # Link GLTools to your executable
 target_link_libraries(${PROJECT_NAME} GLTools)
 
 target_link_libraries(${PROJECT_NAME} ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY})
 target_link_libraries(${PROJECT_NAME} freeglut_static)
-target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/thirdparty/freeglut/include/GL)
+target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE
+    ${CMAKE_SOURCE_DIR}/thirdparty/freeglut/include/GL
+    ${CMAKE_SOURCE_DIR}/thirdparty/gltools/include
+)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/include)
-
-
-
-
