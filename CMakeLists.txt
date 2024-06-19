@@ -16,15 +16,18 @@ set(SRC_FILES)
 
 # you need pre-install OpenGL, GLU, please google
 set(INCLUDE_FILES
+    ${INCLUDE_DIR}/main.hpp
     ${INCLUDE_DIR}/obj.hpp
-    ${INCLUDE_DIR}/matrix.hpp
+    ${INCLUDE_DIR}/stb_image.h
+)
+set(SRC_FILES
+    ${SRC_DIR}/main.cpp
     thirdparty/GLTools/src/math3d.cpp
 )
-set(SRC_FILES)
+
 
 
 add_executable(${PROJECT_NAME}
-    ${SRC_DIR}/main.cpp
     ${INCLUDE_FILES}
     ${SRC_FILES}
 )
