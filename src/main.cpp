@@ -111,12 +111,12 @@ void DrawJet(int nShadow)
     {
       glEnable(GL_TEXTURE_2D);
       glBindTexture(GL_TEXTURE_2D, textures[2]);
-      glColor4fv(white);
+      glColor3fv(white);
     }
     else
     {
       glDisable(GL_TEXTURE_2D);
-      glColor4fv(shadowColor);
+      glColor3fv(shadowColor);
     }
     renderObj(master);
 
@@ -130,12 +130,12 @@ void DrawJet(int nShadow)
       {
         glEnable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, textures[1]);
-        glColor4fv(white);
+        glColor3fv(white);
       }
       else
       {
         glDisable(GL_TEXTURE_2D);
-        glColor4fv(shadowColor);
+        glColor3fv(shadowColor);
       }
 
       renderObj(girl);
@@ -230,7 +230,7 @@ void RenderScene(void)
     float scale = 200;
     glPushMatrix();
     {
-      glColor4f(1, 1, 1, 1);
+      glColor3f(1, 1, 1);
       glScaled(scale, scale, scale);
       glBindTexture(GL_TEXTURE_2D, textures[0]);
       renderObj(sphere);
@@ -259,7 +259,7 @@ void RenderScene(void)
     glPushMatrix();
     {
       glTranslatef(lightPos[lightId][0], lightPos[lightId][1], lightPos[lightId][2]);
-      glColor4f(1, 0, 1, 0.5);
+      glColor3f(1, 0, 1);
       glutSolidSphere(10.0f, 10, 10);
     }
     glPopMatrix();
@@ -311,7 +311,7 @@ void ChangeSize(int w, int h)
 int main(int argc, char *argv[])
 {
   glutInit(&argc, argv);
-  glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
+  glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
   glutInitWindowSize(windowx, windowy);
   glutCreateWindow("110590049 final");
   sphere = readObj("../obj/sphere.obj");
