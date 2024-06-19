@@ -56,8 +56,9 @@ custom
 #define GLEW_STATIC
 #endif
 
-#include <gl\gl.h>   // Microsoft OpenGL headers (version 1.1 by themselves)
+// gltools\include\gl\glew.h(84,1): error C1189: #error:  gl.h included before glew.h
 #include <gl\glew.h> // OpenGL Extension "autoloader"
+#include <gl\gl.h>   // Microsoft OpenGL headers (version 1.1 by themselves)
 
 #endif
 
@@ -84,13 +85,13 @@ custom
 #include <GLShaderManager.h>
 #include <math3d.h>
 
-
 #define VERTEX_DATA 0
 #define NORMAL_DATA 1
 #define TEXTURE_DATA 2
 #define INDEX_DATA 3
 
-class GLTriangleBatch : public GLBatchBase {
+class GLTriangleBatch : public GLBatchBase
+{
 public:
   GLTriangleBatch(void);
   virtual ~GLTriangleBatch(void);

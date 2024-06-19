@@ -40,8 +40,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef GLEW_STATIC
 #define GLEW_STATIC
 #endif
-#include <gl\gl.h>   // Microsoft OpenGL headers (version 1.1 by themselves)
+// gltools\include\gl\glew.h(84,1): error C1189: #error:  gl.h included before glew.h
 #include <gl\glew.h> // OpenGL Extension "autoloader"
+#include <gl\gl.h>   // Microsoft OpenGL headers (version 1.1 by themselves)
 
 #endif
 
@@ -67,7 +68,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <GLBatchBase.h>
 #include <math3d.h>
 
-class GLBatch : public GLBatchBase {
+class GLBatch : public GLBatchBase
+{
 public:
   GLBatch(void);
   virtual ~GLBatch(void);
@@ -85,16 +87,20 @@ public:
   void CopyTexCoordData2f(M3DVector2f *vTexCoords, GLuint uiTextureLayer);
 
   // Just to make life easier...
-  inline void CopyVertexData3f(GLfloat *vVerts) {
+  inline void CopyVertexData3f(GLfloat *vVerts)
+  {
     CopyVertexData3f((M3DVector3f *)(vVerts));
   }
-  inline void CopyNormalDataf(GLfloat *vNorms) {
+  inline void CopyNormalDataf(GLfloat *vNorms)
+  {
     CopyNormalDataf((M3DVector3f *)(vNorms));
   }
-  inline void CopyColorData4f(GLfloat *vColors) {
+  inline void CopyColorData4f(GLfloat *vColors)
+  {
     CopyColorData4f((M3DVector4f *)(vColors));
   }
-  inline void CopyTexCoordData2f(GLfloat *vTex, GLuint uiTextureLayer) {
+  inline void CopyTexCoordData2f(GLfloat *vTex, GLuint uiTextureLayer)
+  {
     CopyTexCoordData2f((M3DVector2f *)(vTex), uiTextureLayer);
   }
 
@@ -127,8 +133,8 @@ protected:
   GLuint vertexArrayObject;
 
   GLuint
-      nVertsBuilding; // Building up vertexes counter (immediate mode emulator)
-  GLuint nNumVerts;   // Number of verticies in this batch
+      nVertsBuilding;      // Building up vertexes counter (immediate mode emulator)
+  GLuint nNumVerts;        // Number of verticies in this batch
   GLuint nNumTextureUnits; // Number of texture coordinate sets
 
   bool bBatchDone; // Batch has been built

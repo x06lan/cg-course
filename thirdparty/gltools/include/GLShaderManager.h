@@ -40,8 +40,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define GLEW_STATIC
 #endif
 
-#include <gl\gl.h>   // Microsoft OpenGL headers (version 1.1 by themselves)
+// gltools\include\gl\glew.h(84,1): error C1189: #error:  gl.h included before glew.h
 #include <gl\glew.h> // OpenGL Extension "autoloader"
+#include <gl\gl.h>   // Microsoft OpenGL headers (version 1.1 by themselves)
 
 #endif
 
@@ -70,7 +71,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Maximum length of shader name
 #define MAX_SHADER_NAME_LENGTH 64
 
-enum GLT_STOCK_SHADER {
+enum GLT_STOCK_SHADER
+{
   GLT_SHADER_IDENTITY = 0,
   GLT_SHADER_FLAT,
   GLT_SHADER_SHADED,
@@ -83,7 +85,8 @@ enum GLT_STOCK_SHADER {
   GLT_SHADER_LAST
 };
 
-enum GLT_SHADER_ATTRIBUTE {
+enum GLT_SHADER_ATTRIBUTE
+{
   GLT_ATTRIBUTE_VERTEX = 0,
   GLT_ATTRIBUTE_COLOR,
   GLT_ATTRIBUTE_NORMAL,
@@ -94,13 +97,15 @@ enum GLT_SHADER_ATTRIBUTE {
   GLT_ATTRIBUTE_LAST
 };
 
-struct SHADERLOOKUPETRY {
+struct SHADERLOOKUPETRY
+{
   char szVertexShaderName[MAX_SHADER_NAME_LENGTH];
   char szFragShaderName[MAX_SHADER_NAME_LENGTH];
   GLuint uiShaderID;
 };
 
-class GLShaderManager {
+class GLShaderManager
+{
 public:
   GLShaderManager(void);
   ~GLShaderManager(void);

@@ -44,8 +44,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define GLEW_STATIC
 #endif
 
-#include <gl\gl.h>   // Microsoft OpenGL headers (version 1.1 by themselves)
+// gltools\include\gl\glew.h(84,1): error C1189: #error:  gl.h included before glew.h
 #include <gl\glew.h> // OpenGL Extension "autoloader"
+#include <gl\gl.h>   // Microsoft OpenGL headers (version 1.1 by themselves)
 
 #endif
 
@@ -71,7 +72,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 //////////////////////// TEMPORARY TEMPORARY TEMPORARY - On SnowLeopard this is
-///suppored, but GLEW doens't hook up properly
+/// suppored, but GLEW doens't hook up properly
 //////////////////////// Fixed probably in 10.6.3
 #ifdef __APPLE__
 #define glGenVertexArrays glGenVertexArraysAPPLE
@@ -98,7 +99,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // This function says, "this pointer is a little endian value"
 // If the value must be changed it is... otherwise, this
 // function is defined away below (on Intel systems for example)
-inline void LITTLE_ENDIAN_WORD(void *pWord) {
+inline void LITTLE_ENDIAN_WORD(void *pWord)
+{
   unsigned char *pBytes = (unsigned char *)pWord;
   unsigned char temp;
 
@@ -111,7 +113,8 @@ inline void LITTLE_ENDIAN_WORD(void *pWord) {
 // This function says, "this pointer is a little endian value"
 // If the value must be changed it is... otherwise, this
 // function is defined away below (on Intel systems for example)
-inline void LITTLE_ENDIAN_DWORD(void *pWord) {
+inline void LITTLE_ENDIAN_DWORD(void *pWord)
+{
   unsigned char *pBytes = (unsigned char *)pWord;
   unsigned char temp;
 
