@@ -1,43 +1,17 @@
+#include "main.hpp"
 
-/*** freeglut***/
-#ifdef _MSC_VER
-#include "windows.h"
-#pragma comment(lib, "opengl32.lib")
-#endif
-
-#include <GLTools.h> // OpenGL toolkit
-#include <math3d.h>
-#include <GL/gl.h>
-#include <stdio.h>
-#include <freeglut.h>
-#include <freeglut_std.h>
-
-#include "time.h"
-
-#include "obj.hpp"
-#include "matrix.hpp"
-#include <vector>
-#include <random>
-
-#include <iostream>
-#include <math.h>
-#include <stdlib.h>
-
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
-// Rotation amounts
-static GLfloat xRot = 0.0f;
-static GLfloat yRot = 1.57f;
-
+int update_time = 10;
+int lightId = 0;
 int windowx = 1920 / 2;
 int windowy = 1080 - 40;
 
 float mousex = 0;
 float mousey = 0;
-// These values need to be available globally
-// Light values and coordinates
-int lightId = 0;
+float r = 0;
+
+GLfloat xRot = 0.0f;
+GLfloat yRot = 1.57f;
+
 GLfloat ambientLight[] = {0.3f, 0.3f, 0.3f, 1.0f};
 GLfloat diffuseLight[] = {0.7f, 0.7f, 0.7f, 1.0f};
 GLfloat specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -50,15 +24,12 @@ GLfloat lightPos[4][4] = {
 GLfloat specref[] = {1.0f, 1.0f, 1.0f, 1.0f};
 GLuint textures[4];
 
-Obj obj1;
-Obj obj2;
-Obj obj3;
-
-float r = 0;
+Obj sphere;
+Obj girl;
+Obj master;
 
 M3DMatrix44f shadowMat;
 
-int update_time = 10;
 void Timer(int value)
 {
   // RenderScene();
@@ -113,33 +84,7 @@ void renderObj(Obj &obj)
   }
   glEnd();
 }
-void load_image(GLuint *textures, const char *path)
-{
-  int width, height, channels;
-  unsigned char *imageData = stbi_load(path, &width, &height, &channels, 0);
 
-  glGenTextures(1, textures);
-  glBindTexture(GL_TEXTURE_2D, *textures);
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-  if (imageData)
-  {
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
-                 width, height,
-                 0, GL_RGB, GL_UNSIGNED_BYTE, imageData);
-    stbi_image_free(imageData);
-    printf("success\n");
-  }
-  else
-  {
-    printf("nmsl\n");
-  }
-
-  glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, *textures);
-}
 ////////////////////////////////////////////////
 // This function just specifically draws the jet
 void DrawJet(int nShadow)
@@ -147,51 +92,53 @@ void DrawJet(int nShadow)
   M3DVector3f vNormal; // Storeage for calculated surface normal
 
   float scale = 0.2;
+  GLubyte white[3] = {255, 255, 255};
+  GLubyte shadowColor[3] = {10, 10, 40};
   // printf("r=%.2f\n", r);
 
   // glTranslatef(0.0f, 10.0f, 0.0f);
   glPushMatrix();
-
-  glPushMatrix();
-  glScaled(scale, scale, scale);
-  glTranslatef(0.0f, -10.0 * scale, 3.0f);
-  glRotatef(r, 0, 1, 0);
-  if (nShadow == 0)
   {
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, textures[1]);
-    glColor3ub(255, 255, 255);
+
+    // glPushMatrix();
+    glScaled(scale, scale, scale);
+    glTranslatef(0.0f, -5.0 * scale, 2.0f);
+    glRotatef(r, 0, 1, 0);
+    if (nShadow == 0)
+    {
+      glEnable(GL_TEXTURE_2D);
+      glBindTexture(GL_TEXTURE_2D, textures[2]);
+      glColor3ubv(white);
+    }
+    else
+    {
+      glDisable(GL_TEXTURE_2D);
+      glColor3ubv(shadowColor);
+    }
+    renderObj(master);
+
+    glPushMatrix();
+    {
+      // glScaled(scale, scale, scale);
+      glTranslatef(0.0f, 0.0f, 1.0f);
+      glRotatef(r, 0, 1, 0);
+
+      if (nShadow == 0)
+      {
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, textures[1]);
+        glColor3ubv(white);
+      }
+      else
+      {
+        glDisable(GL_TEXTURE_2D);
+        glColor3ubv(shadowColor);
+      }
+
+      renderObj(girl);
+    }
+    glPopMatrix();
   }
-  else
-  {
-    glDisable(GL_TEXTURE_2D);
-    glColor3ub(10, 10, 40);
-  }
-  renderObj(obj2);
-
-  // glPopMatrix();
-
-  glPushMatrix();
-
-  // glScaled(scale, scale, scale);
-  glTranslatef(0.0f, 0.0f, 1.0f);
-  glRotatef(r, 0, 1, 0);
-
-  if (nShadow == 0)
-  {
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, textures[2]);
-    glColor3ub(255, 255, 255);
-  }
-  else
-  {
-    glDisable(GL_TEXTURE_2D);
-    glColor3ub(10, 10, 40);
-  }
-
-  renderObj(obj3);
-  glPopMatrix();
-
   glPopMatrix();
 }
 
@@ -199,28 +146,20 @@ void DrawJet(int nShadow)
 // context.
 void SetupRC()
 {
-  GLfloat fAspect;
+
+  GLfloat fAspect = (GLfloat)windowx / (GLfloat)windowy;
 
   glViewport(0, 0, windowx, windowy);
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
 
-  fAspect = (GLfloat)windowx / (GLfloat)windowy;
   gluPerspective(120.0f, fAspect, 0.1, 15000.0);
+
   float length = 100.0f;
   gluLookAt(0.0f, 0.0f, 0.0f,
             length * cos(yRot), length * sin(xRot), length * sin(yRot),
             0.0f, 1.0f, 0.0f);
-  // gluLookAt(0.0f, 100.0f, -400.0f,
-  //           length * cos(yRot), length * cos(xRot), length * sin(yRot),
-  //           0.0f, 1.0f, 0.0f);
-
-  // glRotatef(xRot, 0, 1, 0);
-  // glRotatef(yRot, 1, 0, 0);
-  // glTranslatef(0.0f, 10.0f, 0.0f);
-
-  // Move out Z axis so we can see everything
 
   glLightfv(GL_LIGHT0, GL_POSITION, lightPos[lightId]);
 
@@ -231,7 +170,7 @@ void SetupRC()
 
   glEnable(GL_DEPTH_TEST); // Hidden surface removal
   glFrontFace(GL_CCW);     // Counter clock-wise polygons face out
-  // glEnable(GL_CULL_FACE);  // Do not calculate inside of jet
+  glEnable(GL_CULL_FACE);  // Do not calculate inside of jet
 
   // Setup and enable light 0
   glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
@@ -271,58 +210,54 @@ void RenderScene(void)
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   glDisable(GL_CULL_FACE);
+  // glEnable(GL_CULL_FACE);
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_DEPTH_TEST);
 
-  // Draw the ground, we do manual shading to a darker green
-  // in the background to give the illusion of depth
-  // glPushMatrix();
-  // glBegin(GL_QUADS);
-  // glColor3ub(0, 32, 0); // light green ground
-  // glVertex3f(400.0f, -200.0f, -400.0f);
-  // glVertex3f(-400.0f, -200.0f, -400.0f);
-  // glColor3ub(0, 255, 0); // make it in green gradient
-  // glVertex3f(-400.0f, -200.0f, 400.0f);
-  // glVertex3f(400.0f, -200.0f, 400.0f);
-  // glEnd();
-  // glPopMatrix();
-
-  // Save the matrix state and do the rotations
-  glPushMatrix();
-
-  // Draw jet at new orientation, put light in correct position
-  // before rotating the jet
   glEnable(GL_LIGHTING);
   glLightfv(GL_LIGHT0, GL_POSITION, lightPos[lightId]);
 
-  float scale = 500;
   glPushMatrix();
-  glColor3ub(255, 255, 255);
-  glScaled(scale, scale, scale);
-  glBindTexture(GL_TEXTURE_2D, textures[0]);
-  renderObj(obj1);
-  glPopMatrix();
+  {
 
-  DrawJet(0);
+    // sphere
+    float scale = 500;
+    glPushMatrix();
+    {
+      glColor3ub(255, 255, 255);
+      glScaled(scale, scale, scale);
+      glBindTexture(GL_TEXTURE_2D, textures[0]);
+      renderObj(sphere);
+    }
+    glPopMatrix();
 
-  // Restore original matrix state
-  glPopMatrix();
+    glPushMatrix();
+    {
+      DrawJet(0);
+    }
+    glPopMatrix();
 
-  // Get ready to draw the shadow and the ground
-  // First disable lighting and save the projection state
-  glDisable(GL_DEPTH_TEST);
-  glDisable(GL_LIGHTING);
+    // Get ready to draw the shadow and the ground
+    // First disable lighting and save the projection state
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_LIGHTING);
 
-  glPushMatrix();
-  glMultMatrixf((GLfloat *)shadowMat);
-  DrawJet(1);
-  glPopMatrix();
+    glPushMatrix();
+    {
+      glMultMatrixf((GLfloat *)shadowMat);
+      DrawJet(1);
+    }
+    glPopMatrix();
 
-  // Draw the light source
-  glPushMatrix();
-  glTranslatef(lightPos[lightId][0], lightPos[lightId][1], lightPos[lightId][2]);
-  glColor3ub(255, 0, 255);
-  glutSolidSphere(10.0f, 10, 10);
+    // Draw the light source
+    glPushMatrix();
+    {
+      glTranslatef(lightPos[lightId][0], lightPos[lightId][1], lightPos[lightId][2]);
+      glColor3ub(255, 0, 255);
+      glutSolidSphere(10.0f, 10, 10);
+    }
+    glPopMatrix();
+  }
   glPopMatrix();
 
   glutSwapBuffers();
@@ -371,9 +306,9 @@ int main(int argc, char *argv[])
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
   glutInitWindowSize(windowx, windowy);
   glutCreateWindow("Shadow");
-  obj1 = readObj("../obj/sphere.obj");
-  obj2 = readObj("../obj/girl.obj");
-  obj3 = readObj("../obj/monster.obj");
+  sphere = readObj("../obj/sphere.obj");
+  girl = readObj("../obj/girl.obj");
+  master = readObj("../obj/monster.obj");
   load_image(&textures[0], "../texture/balcony.png");
   load_image(&textures[1], "../texture/girl.jpeg");
   load_image(&textures[2], "../texture/monster.jpg");
