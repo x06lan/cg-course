@@ -9,6 +9,8 @@ float mousex = 0;
 float mousey = 0;
 float r = 0;
 
+bool stop = false;
+
 GLfloat xRot = 0.0f;
 GLfloat yRot = 1.57f;
 
@@ -35,7 +37,8 @@ void Timer(int value)
   // RenderScene();
   glutPostRedisplay(); // Post re-paint request to activate display()
 
-  r += 2;
+  if (!stop)
+    r += 2;
   glutTimerFunc(update_time, Timer, 0); // next Timer call milliseconds later
 }
 void MouseHandler(int button, int state, int x, int y)
@@ -92,8 +95,8 @@ void DrawJet(int nShadow)
   M3DVector3f vNormal; // Storeage for calculated surface normal
 
   float scale = 0.2;
-  GLubyte white[3] = {255, 255, 255};
-  GLubyte shadowColor[3] = {10, 10, 40};
+  GLfloat white[4] = {1, 1, 1, 1.0};
+  GLfloat shadowColor[4] = {10.0 / 255.0, 10.0 / 255.0, 40.0 / 255.0, 0.5};
   // printf("r=%.2f\n", r);
 
   // glTranslatef(0.0f, 10.0f, 0.0f);
@@ -108,31 +111,31 @@ void DrawJet(int nShadow)
     {
       glEnable(GL_TEXTURE_2D);
       glBindTexture(GL_TEXTURE_2D, textures[2]);
-      glColor3ubv(white);
+      glColor4fv(white);
     }
     else
     {
       glDisable(GL_TEXTURE_2D);
-      glColor3ubv(shadowColor);
+      glColor4fv(shadowColor);
     }
     renderObj(master);
 
     glPushMatrix();
     {
       // glScaled(scale, scale, scale);
-      glTranslatef(0.0f, 0.0f, 1.0f);
+      glTranslatef(0.0f, cos(r / 30.0), 1.5f);
       glRotatef(r, 0, 1, 0);
 
       if (nShadow == 0)
       {
         glEnable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, textures[1]);
-        glColor3ubv(white);
+        glColor4fv(white);
       }
       else
       {
         glDisable(GL_TEXTURE_2D);
-        glColor3ubv(shadowColor);
+        glColor4fv(shadowColor);
       }
 
       renderObj(girl);
@@ -154,7 +157,7 @@ void SetupRC()
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
 
-  gluPerspective(120.0f, fAspect, 0.1, 15000.0);
+  gluPerspective(120.0f, fAspect, 0.01, 100.0);
 
   float length = 100.0f;
   gluLookAt(0.0f, 0.0f, 0.0f,
@@ -166,11 +169,11 @@ void SetupRC()
   // Any three points on the ground (counter clockwise order)
   M3DVector3f points[3] = {{-30.0f, -1.0f, -20.0f},
                            {-30.0f, -1.0f, 20.0f},
-                           {40.0f, -1.0f, 20.0f}};
+                           {30.0f, -1.0f, 20.0f}};
 
-  glEnable(GL_DEPTH_TEST); // Hidden surface removal
-  glFrontFace(GL_CCW);     // Counter clock-wise polygons face out
-  glEnable(GL_CULL_FACE);  // Do not calculate inside of jet
+  // glEnable(GL_DEPTH_TEST); // Hidden surface removal
+  glFrontFace(GL_CCW);    // Counter clock-wise polygons face out
+  glEnable(GL_CULL_FACE); // Do not calculate inside of jet
 
   // Setup and enable light 0
   glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
@@ -209,10 +212,13 @@ void RenderScene(void)
   // Clear the window with current clearing color
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  glDisable(GL_CULL_FACE);
   // glEnable(GL_CULL_FACE);
+  glDisable(GL_CULL_FACE);
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_DEPTH_TEST);
+
+  // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  // glEnable(GL_BLEND);
 
   glEnable(GL_LIGHTING);
   glLightfv(GL_LIGHT0, GL_POSITION, lightPos[lightId]);
@@ -221,10 +227,10 @@ void RenderScene(void)
   {
 
     // sphere
-    float scale = 500;
+    float scale = 100;
     glPushMatrix();
     {
-      glColor3ub(255, 255, 255);
+      glColor4f(1, 1, 1, 1);
       glScaled(scale, scale, scale);
       glBindTexture(GL_TEXTURE_2D, textures[0]);
       renderObj(sphere);
@@ -253,7 +259,7 @@ void RenderScene(void)
     glPushMatrix();
     {
       glTranslatef(lightPos[lightId][0], lightPos[lightId][1], lightPos[lightId][2]);
-      glColor3ub(255, 0, 255);
+      glColor4f(1, 0, 1, 0.5);
       glutSolidSphere(10.0f, 10, 10);
     }
     glPopMatrix();
@@ -289,6 +295,8 @@ void NormalKeyHandler(unsigned char key, int x, int y)
     lightId = 2;
   if (key == '4')
     lightId = 3;
+  if (key == ' ')
+    stop = !stop;
 
   printf("lightId: %d\n", lightId);
 
@@ -303,9 +311,9 @@ void ChangeSize(int w, int h)
 int main(int argc, char *argv[])
 {
   glutInit(&argc, argv);
-  glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+  glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
   glutInitWindowSize(windowx, windowy);
-  glutCreateWindow("Shadow");
+  glutCreateWindow("110590049 final");
   sphere = readObj("../obj/sphere.obj");
   girl = readObj("../obj/girl.obj");
   master = readObj("../obj/monster.obj");

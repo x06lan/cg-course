@@ -43,8 +43,8 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 #define GLEW_STATIC
 #endif
 
-#include <GL\glew.h> // OpenGL Extension "autoloader"
-#include <GL\gl.h>   // Microsoft OpenGL headers (version 1.1 by themselves)
+#include <glew.h> // OpenGL Extension "autoloader"
+#include <gl.h>   // Microsoft OpenGL headers (version 1.1 by themselves)
 #endif
 
 // Mac OS X
