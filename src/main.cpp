@@ -1,6 +1,6 @@
 #include "main.hpp"
 
-int update_time = 10;
+int update_time = 30;
 int lightId = 0;
 int windowx = 1920 / 2;
 int windowy = 1080 - 40;
@@ -28,17 +28,17 @@ GLuint textures[4];
 
 Obj sphere;
 Obj girl;
-Obj master;
+Obj monster;
 
 M3DMatrix44f shadowMat;
 
 void Timer(int value)
 {
-  // RenderScene();
-  glutPostRedisplay(); // Post re-paint request to activate display()
 
   if (!stop)
     r += 2;
+  // RenderScene();
+  glutPostRedisplay();                  // Post re-paint request to activate display()
   glutTimerFunc(update_time, Timer, 0); // next Timer call milliseconds later
 }
 void MouseHandler(int button, int state, int x, int y)
@@ -58,8 +58,22 @@ void MouseHandler(int button, int state, int x, int y)
   // xRot = mousex * 3.14;
   // yRot = mousey * 3.14;
 }
-void renderObj(Obj &obj)
+void renderObj(Obj &obj, bool shadow = false, GLuint texture = 0)
 {
+  GLfloat white[4] = {1, 1, 1, 1.0};
+  GLfloat shadowColor[4] = {10.0 / 255.0, 10.0 / 255.0, 40.0 / 255.0, 0.5};
+  if (!shadow)
+  {
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glColor3fv(white);
+  }
+  else
+  {
+    glDisable(GL_TEXTURE_2D);
+    glColor3fv(shadowColor);
+  }
+
   M3DVector3f vNormal;
   glBegin(GL_TRIANGLES);
   for (auto i = 0; i < obj.faces.size(); i++)
@@ -95,9 +109,10 @@ void DrawJet(int nShadow)
   M3DVector3f vNormal; // Storeage for calculated surface normal
 
   float scale = 0.2;
-  GLfloat white[4] = {1, 1, 1, 1.0};
-  GLfloat shadowColor[4] = {10.0 / 255.0, 10.0 / 255.0, 40.0 / 255.0, 0.5};
+  bool shadow = nShadow == 1;
+
   // printf("r=%.2f\n", r);
+  glShadeModel(GL_SMOOTH);
 
   // glTranslatef(0.0f, 10.0f, 0.0f);
   glPushMatrix();
@@ -107,18 +122,8 @@ void DrawJet(int nShadow)
     glScaled(scale, scale, scale);
     glTranslatef(0.0f, -5.0 * scale, 2.0f);
     glRotatef(r, 0, 1, 0);
-    if (nShadow == 0)
-    {
-      glEnable(GL_TEXTURE_2D);
-      glBindTexture(GL_TEXTURE_2D, textures[2]);
-      glColor3fv(white);
-    }
-    else
-    {
-      glDisable(GL_TEXTURE_2D);
-      glColor3fv(shadowColor);
-    }
-    renderObj(master);
+
+    renderObj(monster, shadow, textures[2]);
 
     glPushMatrix();
     {
@@ -126,19 +131,7 @@ void DrawJet(int nShadow)
       glTranslatef(0.0f, cos(r / 30.0), 1.5f);
       glRotatef(r, 0, 1, 0);
 
-      if (nShadow == 0)
-      {
-        glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, textures[1]);
-        glColor3fv(white);
-      }
-      else
-      {
-        glDisable(GL_TEXTURE_2D);
-        glColor3fv(shadowColor);
-      }
-
-      renderObj(girl);
+      renderObj(girl, shadow, textures[1]);
     }
     glPopMatrix();
   }
@@ -233,7 +226,7 @@ void RenderScene(void)
       glColor3f(1, 1, 1);
       glScaled(scale, scale, scale);
       glBindTexture(GL_TEXTURE_2D, textures[0]);
-      renderObj(sphere);
+      renderObj(sphere, false, textures[0]);
     }
     glPopMatrix();
 
@@ -316,7 +309,7 @@ int main(int argc, char *argv[])
   glutCreateWindow("110590049 final");
   sphere = readObj("../obj/sphere.obj");
   girl = readObj("../obj/girl.obj");
-  master = readObj("../obj/monster.obj");
+  monster = readObj("../obj/monster.obj");
   load_image(&textures[0], "../texture/balcony.png");
   load_image(&textures[1], "../texture/girl.jpeg");
   load_image(&textures[2], "../texture/monster.jpg");

@@ -1,5 +1,5 @@
 # 110590049 final
-
+just try make the scene look like `future world` by make it more sci-fi.
 ## result
 
 - load 3 different texture
@@ -43,11 +43,11 @@ sudo apt install cmake
 ## run
 **recommend use linux**
 
-<!-- ### windows -->
+### windows
 <!-- install `cmake tools` in your vscode -->
-<!-- ```
+```
 ./build/cg-course.exe
-``` -->
+```
 
 
 ### linux
