@@ -1,12 +1,15 @@
 name: build
 
+
 on:
-  workflow_dispatch:
-  pull_request:
-    branches:
-      - master
-      - mid
-      - hw*
+push:
+  branches:
+    - '**'
+  # pull_request:
+  #   branches:
+  #     - master
+  #     - mid
+  #     - hw*
 
 jobs:
   build:
